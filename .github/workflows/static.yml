@@ -1,52 +1,64 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Workflow for deploying PAPABLAST Jump game to GitHub Pages
+name: Deploy PAPABLAST Jump to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
+  # Trigger on push to the main branch
   push:
     branches: ['main']
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# Sets the GITHUB_TOKEN permissions to allow deployment to GitHub Pages
+# Set the GITHUB_TOKEN permissions for deployment to GitHub Pages
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow one concurrent deployment
+# Allow only one concurrent deployment and cancel in-progress deployments if a new one is triggered
 concurrency:
   group: 'pages'
   cancel-in-progress: true
 
 jobs:
-  # Single deploy job since we're just deploying
   deploy:
+    # Define the environment for the deployment
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    
+    # Define the operating system for the job
     runs-on: ubuntu-latest
+    
     steps:
-      - name: Checkout
+      # Step 1: Checkout the code from the repository
+      - name: Checkout the repository
         uses: actions/checkout@v4
-      - name: Setup Node
+
+      # Step 2: Setup Node.js and cache dependencies for faster installs
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
           cache: 'npm'
           cache-dependency-path: './'
+
+      # Step 3: Install the project dependencies using npm
       - name: Install dependencies
         run: npm install
-      - name: Build
+
+      # Step 4: Build the project (make sure the game builds in the 'dist' or 'docs' folder)
+      - name: Build the game
         run: npm run build
-      - name: Setup Pages
+
+      # Step 5: Configure GitHub Pages for deployment
+      - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
-      - name: Upload artifact
+
+      # Step 6: Upload the build artifact (the game files) to GitHub Pages
+      - name: Upload the build artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload dist repository
-          path: './dist'
+          path: './dist'  # Make sure the build files are in the 'dist' folder (or 'docs' if using that path)
+
+      # Step 7: Deploy the artifact to GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
