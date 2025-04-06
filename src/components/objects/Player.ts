@@ -25,10 +25,10 @@ export class Player {
 
         if (this.image.complete) {
             ctx.save();
-            // TODO: нужно удалить если хотим вместо квадрата добавить персонажа
+            // TODO: remove if we want to add a character instead of a square
             ctx.fillStyle = '#4CAF50';
             ctx.fillRect(this.x, this.y, this.width, this.height);
-            // TODO: нужно разкоментировать и улучшить если хотим добавить вместо кадрата персонажа
+            // TODO: uncomment and improve if we want to add a character instead of a square
             // if (this.dir === "left") {
             //   ctx.scale(-1, 1);
             //   ctx.drawImage(this.image, -this.x - this.width, this.y, this.width, this.height);

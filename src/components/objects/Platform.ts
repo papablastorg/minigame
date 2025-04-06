@@ -19,7 +19,7 @@ export class Platform {
         this.y = position;
         this.image = new Image();
 
-        // Выбираем изображение платформы в зависимости от уровня
+        // Select platform image based on level
         if (level === 1) {
             this.image.src = platformImage1;
         } else if (level === 2) {
@@ -51,15 +51,15 @@ export class Platform {
     draw(ctx: CanvasRenderingContext2D | null) {
         if (!ctx) return;
 
-        // Если изображение загружено, рисуем его
+        // If image is loaded, draw it
         if (this.image.complete) {
-            // TODO: нужно удалить если хотим вместо прямоугольников другие платформы
+            // TODO: remove if we want to use different platforms instead of rectangles
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
-            // TODO: нужно расскоментировать если хотим вместо прямоугольников другие платформы
+            // TODO: uncomment if we want to use different platforms instead of rectangles
             // ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
         } else {
-            // Если изображение еще не загружено, рисуем прямоугольник
+            // If image is not loaded yet, draw a rectangle
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }

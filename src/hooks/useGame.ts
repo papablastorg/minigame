@@ -3,11 +3,11 @@ import { useEffect, useState, useRef } from "react";
 const GAME_WIDTH = 400;
 const GAME_HEIGHT = 600;
 const GRAVITY = 0.5;
-const JUMP_STRENGTH = -12;  // Сила прыжка
+const JUMP_STRENGTH = -12;  // Jump strength
 const PLATFORM_HEIGHT = 10;
 const PLATFORM_WIDTH = 100;
-const DODLER_SPEED = 5;  // Скорость движения дудлера
-const MIN_PLATFORMS = 5;  // Минимальное количество платформ на старте
+const DODLER_SPEED = 5;  // Doodler movement speed
+const MIN_PLATFORMS = 5;  // Minimum number of platforms at start
 
 export function useGame() {
   const [doodler, setDoodler] = useState({
@@ -40,7 +40,7 @@ export function useGame() {
       if (e.key === "ArrowLeft") setDoodler((d) => ({ ...d, speedX: -DODLER_SPEED }));
       if (e.key === "ArrowRight") setDoodler((d) => ({ ...d, speedX: DODLER_SPEED }));
 
-      // Перезапуск игры по пробелу
+      // Restart game on space
       if (e.key === " " && isGameOver) {
         setIsGameOver(false);
         setDoodler({
@@ -77,27 +77,27 @@ export function useGame() {
     const updateGame = () => {
       if (isGameOver) return;
 
-      // Обновляем состояние дудлера
+      // Update doodler state
       setDoodler((d) => {
         let newY = d.y + d.velocity;
         let newVelocity = d.velocity + GRAVITY;
 
         let isCollidingWithPlatform = false;
 
-        // Проверка столкновения с платформами
+        // Check collision with platforms
         platforms.forEach((p) => {
-          // Если дудлер падает и его нижняя часть касается платформы
+          // If doodler is falling and its bottom part touches the platform
           if (
-            newY + 50 >= p.y &&  // нижняя часть дудлера
-            newY + 50 <= p.y + PLATFORM_HEIGHT &&  // в пределах платформы по вертикали
-            d.x + 50 > p.x &&  // дудлер находится слева от платформы
-            d.x < p.x + PLATFORM_WIDTH  // дудлер находится справа от платформы
+            newY + 50 >= p.y &&  // doodler's bottom
+            newY + 50 <= p.y + PLATFORM_HEIGHT &&  // within platform vertically
+            d.x + 50 > p.x &&  // doodler is to the left of the platform
+            d.x < p.x + PLATFORM_WIDTH  // doodler is to the right of the platform
           ) {
-            // Если дудлер падает вниз, то он отскакивает только при касании нижней части платформы
-            if (d.velocity > 0) {  // Только при падении
-              newVelocity = JUMP_STRENGTH;  // Применяем силу прыжка
-              isCollidingWithPlatform = true;  // Обнаружено столкновение с платформой
-              newY = p.y - 50;  // Устанавливаем дудлера на платформу
+            // If doodler is falling down, it bounces only when touching the bottom of the platform
+            if (d.velocity > 0) {  // Only when falling
+              newVelocity = JUMP_STRENGTH;  // Apply jump strength
+              isCollidingWithPlatform = true;  // Collision with platform detected
+              newY = p.y - 50;  // Set doodler on the platform
             }
           }
         });
@@ -115,7 +115,7 @@ export function useGame() {
         return { ...d, x: newX, y: newY, velocity: newVelocity };
       });
 
-      // Платформы двигаются вниз только если дудлер в воздухе
+      // Platforms move down only if doodler is in the air
       if (!isOnPlatform) {
         setPlatforms((prevPlatforms) => {
           const newPlatforms = prevPlatforms.map((p) => ({
@@ -135,10 +135,10 @@ export function useGame() {
         });
       }
 
-      // Камера следит за дудлером
+      // Camera follows the doodler
       setCameraOffset((prevOffset) => {
         const targetOffset = Math.max(0, doodler.y - GAME_HEIGHT / 2);
-        return prevOffset + (targetOffset - prevOffset) * 0.1;  // плавное следование за дудлером
+        return prevOffset + (targetOffset - prevOffset) * 0.1;  // smooth follow of the doodler
       });
 
       gameLoopRef.current = requestAnimationFrame(updateGame);
