@@ -6,6 +6,8 @@ function App() {
   useEffect(() => {
     // Initialize Telegram Mini App
     WebApp.ready();
+    console.log('WebApp',WebApp);
+    console.log('WebApp.initData',WebApp.initData);
   }, []);
 
   return (
