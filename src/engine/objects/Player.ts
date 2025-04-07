@@ -1,8 +1,11 @@
-import playerImage from '/images/papa.png';
+import playerImage from '/images/player_jump2.png';
+import playerImageJumped from '/images/player_jumped.png';
+import playerImageFall from '/images/player_jump.png';
 
 import { BaseObject } from '../interfaces.ts';
 import { Platform } from './Platform.ts';
 import StoreInstance, { Store } from '../store/index.ts';
+
 export class Player extends BaseObject {
     public vy = 6;
     public vx = 0;
@@ -11,10 +14,12 @@ export class Player extends BaseObject {
     public isDead: boolean | string = false;
     public width = 50;
     public height = 80;
-    public dir = 'left';
+    public dir = "left";
     public x: number;
     public y: number;
     public image: HTMLImageElement;
+    public imageJumped: HTMLImageElement;
+    public imageFall: HTMLImageElement;
     public score: number = 0;
     public store: Store = StoreInstance;
     public gravity: number;
@@ -22,6 +27,7 @@ export class Player extends BaseObject {
     public broken: number;
     public canvasHeight: number;
     public canvasWidth: number;
+    public isOnSpring: boolean = false;
 
     constructor(name: string, width: number, height: number) {
         super(name);
@@ -30,11 +36,14 @@ export class Player extends BaseObject {
         this.x = width / 2 - this.width / 2;
         this.y = height - this.height;
         this.image = new Image();
+        this.imageJumped = new Image();
+        this.imageFall = new Image();
         this.image.src = playerImage;
+        this.imageJumped.src = playerImageJumped;
+        this.imageFall.src = playerImageFall;
         this.gravity = 0.2;
         this.broken = 0;
     }
-
 
     start() {
         this.flag = 0;
@@ -42,31 +51,39 @@ export class Player extends BaseObject {
     }
 
     draw(ctx: CanvasRenderingContext2D | null) {
-
         if (!ctx) return;
 
-        if (this.image.complete) {
+        if (this.image.complete && this.imageJumped.complete && this.imageFall.complete) {
             ctx.save();
-            // TODO: remove if we want to add a character instead of a square
-            // TODO: uncomment and improve if we want to add a character instead of a square
-            const cropX = 130;
-            const cropY = 60;
-            const cropWidth = 250;
+            
+            // Select image based on player state
+            let currentImage;
+            if (this.isOnSpring) {
+                currentImage = this.imageJumped;
+            } else if (this.vy > 0) {
+                currentImage = this.imageFall;
+            } else {
+                currentImage = this.image;
+            }
+            
+            let cropX = 130;
+            let cropY = 13;
+            const cropWidth = 245;
             const cropHeight = 400;
 
             const aspectRatio = cropWidth / cropHeight;
             const drawHeight = this.height;
             const drawWidth = drawHeight * aspectRatio;
 
-            ctx.fillStyle = '#4CAF50';
-            ctx.fillRect(this.x, this.y, drawWidth, drawHeight);
+            if (this.dir === "left") cropX = 130;
+            else if (this.dir === "right") cropY = 13;
+            else if (this.dir === "right_land") cropY = 13;
+            else if (this.dir === "left_land") cropY = 13;
 
-            // console.log('isMovingLeft',this.isMovingLeft);
-
-            if (this.dir === "right") {
-              ctx.scale(-1, 1);
-                  ctx.drawImage(
-                    this.image,
+            if (this.dir === "right" || this.dir === "right_land") {
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    currentImage,
                     cropX, cropY,
                     cropWidth, cropHeight,
                     -this.x - drawWidth, this.y,
@@ -74,7 +91,7 @@ export class Player extends BaseObject {
                 );
             } else {
                 ctx.drawImage(
-                    this.image,
+                    currentImage,
                     cropX, cropY,
                     cropWidth, cropHeight,
                     this.x, this.y,
@@ -84,24 +101,38 @@ export class Player extends BaseObject {
             ctx.restore();
         } else {
             ctx.fillStyle = '#4CAF50';
-            ctx.fillRect(this.x, this.y, this.canvasWidth, this.canvasHeight);
+            ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
 
     jump() {
-        this.vy = -6;
+        this.vy = -8;
         this.vx = 0;
     }
 
     jumpHigh() {
-        this.vy = -9;
+        this.vy = -16;
         this.vx = 0;
     }
 
+    setSpringState(isOnSpring: boolean) {
+        this.isOnSpring = isOnSpring;
+    }
+
+    land() {
+        // State is automatically reset when vy <= 0
+    }
+
     public update() {
+        if (this.store.player.dir === "left") {
+            this.store.player.dir = "left";
+        } else if (this.store.player.dir === "right") {
+            this.store.player.dir = "right";
+        }
+
         // Movement
         if (this.store.player.isMovingLeft) {
-            this.store.player.x += this.store.player.vx;
+                this.store.player.x += this.store.player.vx;
             this.store.player.vx -= 0.15;
         } else {
             this.store.player.x += this.store.player.vx;
@@ -121,36 +152,40 @@ export class Player extends BaseObject {
         else if (this.store.player.vx < -8) this.store.player.vx = -8;
 
         // Jump on base
-        if ((this.store.player.y + this.store.player.height) > this.store.base.y && this.store.base.y < this.canvasHeight) {
+        if ((this.store.player.y + this.store.player.height) > this.store.base.y && this.store.base.y < this.height) {
             this.store.player.jump();
         }
 
         // Game over
-        if (this.store.base.y > this.canvasHeight && (this.store.player.y + this.store.player.height) > this.canvasHeight && this.store.player.isDead !== "lol") {
+        if (this.store.base.y > this.height && (this.store.player.y + this.store.player.height) > this.height && this.store.player.isDead !== "lol") {
             this.store.player.isDead = true;
         }
 
         // Wrap around
-        if (this.store.player.x > this.canvasWidth) this.store.player.x = 0 - this.store.player.width;
-        else if (this.store.player.x < 0 - this.store.player.width) this.store.player.x = this.canvasWidth;
+        if (this.store.player.x > this.width) this.store.player.x = 0 - this.store.player.width;
+        else if (this.store.player.x < 0 - this.store.player.width) this.store.player.x = this.width;
 
-        // Gravity
-        if (this.store.player.y >= (this.canvasHeight / 2) - (this.store.player.height / 2)) {
+        // Gravity and platform movement
+        if (this.store.player.y >= (this.height / 2) - (this.store.player.height / 2)) {
             this.store.player.y += this.store.player.vy;
             this.store.player.vy += this.gravity;
         } else {
-            // Move platforms and base only when player is above middle
-            this.store.platforms.forEach((p, i) => {
-                p.y -= this.store.player.vy;
-                if (p.y > this.canvasHeight) {
-                    const currentLevel = this.getCurrentLevel();
-                    this.store.platforms[i] = new Platform(p.y - this.canvasHeight, this.canvasWidth, this.score, this.broken, currentLevel);
-                }
-            });
+            // Move platforms and base only when player is moving up
+            // TODO: Fix this
+            const platformCount = 20;
+            if (this.store.player.vy < 0) {
+                this.store.platforms.forEach((p, i) => {
+                    p.y -= this.store.player.vy;
+                    if (p.y > this.height) {
+                        const currentLevel = this.getCurrentLevel();
+                        this.store.platforms[i] = new Platform(p.y - this.height - (this.height / platformCount), this.width, this.score, currentLevel);
+                    }
+                });
 
-            this.store.base.y -= this.store.player.vy;
+                this.store.base.y -= this.store.player.vy;
+            }
+            
             this.store.player.vy += this.gravity;
-
             if (this.store.player.vy >= 0) {
                 this.store.player.y += this.store.player.vy;
                 this.store.player.vy += this.gravity;
@@ -170,20 +205,47 @@ export class Player extends BaseObject {
             const platformLeft = p.x;
             const platformRight = p.x + p.width;
 
+            // Check spring collision
+            if (this.store.player.vy > 0 && this.store.spring.state === 0 &&
+                (playerLeft + 15 < this.store.spring.x + this.store.spring.width) &&
+                (playerRight - 15 > this.store.spring.x) &&
+                (playerBottom > this.store.spring.y) &&
+                (playerBottom < this.store.spring.y + this.store.spring.height)) {
+                this.store.spring.state = 1;
+                this.store.player.setSpringState(true);
+                this.store.player.jumpHigh();
+                return;
+            }
+
+            // Reset spring state when player starts falling
+            if (this.store.player.vy > 0) {
+                this.store.player.setSpringState(false);
+            }
+
             if (this.store.player.vy > 0 && p.state === 0 &&
-              playerBottom > platformTop &&
-              playerBottom < platformBottom &&
-              playerRight > platformLeft + 5 &&
-              playerLeft < platformRight - 5) {
+                playerBottom > platformTop &&
+                playerBottom < platformBottom &&
+                playerRight > platformLeft + 5 &&
+                playerLeft < platformRight - 5) {
                 if (p.type === 3 && p.flag === 0) {
                     p.flag = 1;
+                    if (!this.store.platformBroken.appearance) {
+                        this.store.platformBroken.x = p.x;
+                        this.store.platformBroken.y = p.y;
+                        this.store.platformBroken.appearance = true;
+                    }
                     return;
                 } else if (p.type === 4 && p.state === 0) {
                     this.store.player.jump();
                     p.state = 1;
                 } else if (p.flag === 1) return;
                 else {
+                    this.store.player.land();
                     this.store.player.jump();
+                    this.store.player.dir = this.store.player.dir === "right" ? "right_land" : "left_land";
+                    setTimeout(() => {
+                        this.store.player.dir = this.store.player.dir === "right_land" ? "right" : "left";
+                    }, 200);
                 }
             }
         });

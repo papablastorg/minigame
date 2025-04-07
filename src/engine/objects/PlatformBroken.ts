@@ -1,8 +1,8 @@
-import platformImage3 from '/images/3.png';
+import platform_broken from '/images/broken_platform.png';
 
 import  { BaseObject } from '../interfaces';
 
-export class PlatformBrokenSubstitute extends BaseObject {
+export class PlatformBroken extends BaseObject {
     public x: number;
     public y: number;
     public width = 100;
@@ -15,17 +15,17 @@ export class PlatformBrokenSubstitute extends BaseObject {
         this.x = 0;
         this.y = 0;
         this.image = new Image();
-        this.image.src = platformImage3;
+        this.image.src = platform_broken;
     }
 
     draw(ctx: CanvasRenderingContext2D | null) {
         if (!ctx || !this.appearance) return;
 
         if (this.image.complete) {
-            const cropY = 210;
-            const cropHeight = 90;
-            const cropX = 80;
-            const cropWidth = 350;
+            const cropY = 8;       
+            const cropHeight = 110;    
+            const cropX = 3;         
+            const cropWidth = 295; 
 
             ctx.drawImage(
                 this.image,

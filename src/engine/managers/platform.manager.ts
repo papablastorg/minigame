@@ -1,5 +1,5 @@
 import { Manager } from '../interfaces.ts';
-import { Platform } from '../../components/objects/Platform.ts';
+import { Platform } from '../objects/Platform.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class PlatformManager extends Manager {
@@ -32,35 +32,27 @@ export class PlatformManager extends Manager {
 
   private generatePlatforms() {
     this.platforms = [];
-    this.position = 0;
     const currentLevel = this.store.player.getCurrentLevel();
     for (let i = 0; i < this.platformCount; i++) {
-      this.platforms.push(new Platform(this.position, this.width, this.store.player.score, this.store.player.broken, currentLevel));
-      this.position += (this.height / this.platformCount);
-    }
+        this.platforms.push(new Platform(this.position, this.width, this.store.player.score, currentLevel));
+        this.position += (this.height / this.platformCount);
+    } 
     this.store.platforms = this.platforms;
   }
 
   private updatePlatforms() {
-    this.store.platforms.forEach(p => {
+    this.platforms.forEach(p => {
       if (p.type === 2) {
-        if (p.x < 0 || p.x + p.width > this.width) p.vx *= -1;
-        p.x += p.vx;
+          if (p.x < 0 || p.x + p.width > this.width) p.vx *= -1;
+          p.x += p.vx;
       }
+  });
 
-      if (p.flag === 1 && !this.store.platformBrokenSubstitute.appearance && this.jumpCount === 0) {
-        this.store.platformBrokenSubstitute.x = p.x;
-        this.store.platformBrokenSubstitute.y = p.y;
-        this.store.platformBrokenSubstitute.appearance = true;
-        this.jumpCount++;
-      }
-    });
-
-    if (this.store.platformBrokenSubstitute.appearance) {
-      this.store.platformBrokenSubstitute.y += 8;
-      if (this.store.platformBrokenSubstitute.y > this.height) {
-        this.store.platformBrokenSubstitute.appearance = false;
-      }
+    if (this.store.platformBroken.appearance) {
+        this.store.platformBroken.y += 8;
+        if (this.store.platformBroken.y > this.height) {
+            this.store.platformBroken.appearance = false;
+        }
     }
   }
 }

@@ -5,7 +5,7 @@ export abstract class Manager {
   }
   update() {}
 
-  draw(_ctx: CanvasRenderingContext2D) {}
+  draw(_ctx: CanvasRenderingContext2D | null) {}
 
 
   start() {}
@@ -19,11 +19,11 @@ export abstract class BaseObject {
   }
   update() {}
   start() {}
-  draw(ctx: CanvasRenderingContext2D) {}
+  draw(ctx: CanvasRenderingContext2D | null) {}
 }
 
 export abstract class Engine {
-  private animationFrameId: number = null;
+  private animationFrameId: number | null = null;
 
   start() {
     if (this.animationFrameId === null) this.update();

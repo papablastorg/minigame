@@ -1,13 +1,15 @@
 import { Player } from '../objects/Player';
 import { Base } from '../objects/Base';
+import { Spring } from '../objects/Spring';
 import { Platform } from '../objects/Platform';
-import { PlatformBrokenSubstitute } from '../objects/PlatformBrokenSubstitute';
+import { PlatformBroken } from '../objects/PlatformBroken';
 
 export class Store {
   public platforms: Platform[] = [];
   public player: Player;
   public base: Base;
-  public platformBrokenSubstitute: PlatformBrokenSubstitute;
+  public platformBroken: PlatformBroken;
+  public spring: Spring;
   public onScoreUpdate: (score: number) => void;
   public onGameOver: () => void;
 }

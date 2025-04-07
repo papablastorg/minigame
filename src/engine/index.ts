@@ -1,9 +1,10 @@
 import { Player } from './objects/Player';
 import { Base } from './objects/Base';
-import { PlatformBrokenSubstitute } from './objects/PlatformBrokenSubstitute';
+import { PlatformBroken } from './objects/PlatformBroken';
 import { PlatformManager } from './managers';
 import { Manager, BaseObject, Engine } from './interfaces.ts';
 import StoreInstance, { Store } from './store/index.ts';
+import { Spring } from './objects/Spring.ts';
 
 export class GameEngine extends Engine {
   private canvas: HTMLCanvasElement;
@@ -13,6 +14,7 @@ export class GameEngine extends Engine {
   private objects: Map<string, BaseObject> = new Map();
   private managers: Map<string, Manager> = new Map();
   public store: Store = StoreInstance;
+
   constructor(
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
@@ -35,11 +37,13 @@ export class GameEngine extends Engine {
     this.store.player = new Player('player', this.canvas.width, this.canvas.height);
     this.store.platforms = [];
     this.store.base = new Base('base', this.canvas.width, this.canvas.height);
-    this.store.platformBrokenSubstitute = new PlatformBrokenSubstitute('platformBrokenSubstitute');
+    this.store.platformBroken = new PlatformBroken('platformBroken');
+    this.store.spring = new Spring('spring');
     this.register(this.store.player);
     this.register(this.store.base);
-    this.register(this.store.platformBrokenSubstitute);
+    this.register(this.store.platformBroken);
     this.register(new PlatformManager('platform', this.canvas.width, this.canvas.height));
+    this.register(this.store.spring);
     this.objects.forEach((o) => o.start());
     this.managers.forEach((m) => m.start());
   }
