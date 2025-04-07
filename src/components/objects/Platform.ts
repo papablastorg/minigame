@@ -1,6 +1,7 @@
 import platformImage1 from '/images/1.png';
 import platformImage2 from '/images/2.png';
 import platformImage3 from '/images/3.png';
+import platformImage4 from '/images/platforma.png';
 
 export class Platform {
     x: number;
@@ -46,20 +47,59 @@ export class Platform {
             this.type = 1;
             broken = 0;
         }
+
+        // Select platform image based on type
+        if (this.type === 1) { // Normal platform
+            this.image.src = platformImage1;
+        } else if (this.type === 2) { // Moving platform
+            this.image.src = platformImage2;
+        } else if (this.type === 3) { // Breakable platform
+            this.image.src = platformImage3;
+        } else if (this.type === 4) { // Vanishable platform
+            this.image.src = platformImage4;
+        }
+
+        this.moved = 0;
+        this.vx = 1;
     }
 
     draw(ctx: CanvasRenderingContext2D | null) {
         if (!ctx) return;
 
+        // If platform is broken, don't draw it
+        if (this.type === 3 && this.flag === 1) {
+            return;
+        }
+
         // If image is loaded, draw it
-        if (this.image.complete) {
+        if (this.image.complete) {          
             // TODO: remove if we want to use different platforms instead of rectangles
+            // ctx.fillStyle = '#8B4513';
+            // ctx.fillRect(this.x, this.y, this.width, this.height);
+            // TODO: uncomment if we want to use different platforms instead of rectangles
+            const cropY = 210;       
+            const cropHeight = 90;    
+            const cropX = 80;         
+            const cropWidth = 350; 
+
+            // const aspectRatio = cropWidth / cropHeight;
+            // const drawHeight = this.height;
+            // const drawWidth = drawHeight * aspectRatio;
+
+            // const aspectRatio = cropWidth / cropHeight;
+            // const drawWidth = this.width;
+            // const drawHeight = drawWidth / aspectRatio;
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
-            // TODO: uncomment if we want to use different platforms instead of rectangles
-            // ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+            ctx.drawImage(
+                this.image,
+                cropX, cropY,
+                cropWidth, cropHeight,
+                this.x, this.y,
+                this.width, this.height
+            );
         } else {
-            // If image is not loaded yet, draw a rectangle
+            // Fallback rectangle if image is not loaded
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }

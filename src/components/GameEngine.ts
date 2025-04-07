@@ -1,6 +1,7 @@
 import { Player } from './objects/Player';
 import { Platform } from './objects/Platform';
 import { Base } from './objects/Base';
+import { PlatformBrokenSubstitute } from './objects/PlatformBrokenSubstitute';
 
 export class GameEngine {
     private canvas: HTMLCanvasElement;
@@ -20,6 +21,8 @@ export class GameEngine {
     private onScoreUpdate: (score: number) => void;
     private onGameOver: () => void;
     private animationFrameId: number | null = null;
+    private platformBrokenSubstitute: PlatformBrokenSubstitute;
+    private jumpCount = 0;
 
     constructor(
         canvas: HTMLCanvasElement,
@@ -41,6 +44,7 @@ export class GameEngine {
         this.onGameOver = onGameOver;
         this.base = new Base(canvas.width, canvas.height);
         this.player = new Player(canvas.width, canvas.height);
+        this.platformBrokenSubstitute = new PlatformBrokenSubstitute();
         this.generatePlatforms();
     }
 
@@ -56,8 +60,10 @@ export class GameEngine {
         this.flag = 0;
         this.dir = "left";
         this.broken = 0;
+        this.jumpCount = 0;
         this.player = new Player(this.canvas.width, this.canvas.height);
         this.base = new Base(this.canvas.width, this.canvas.height);
+        this.platformBrokenSubstitute = new PlatformBrokenSubstitute();
         this.platforms = [];
         this.generatePlatforms();
         this.start();
@@ -80,8 +86,8 @@ export class GameEngine {
     }
 
     private getCurrentLevel(): number {
-        if (this.score >= 500) return 3;
-        if (this.score >= 250) return 2;
+        if (this.score >= 5000) return 3;
+        if (this.score >= 2500) return 2;
         return 1;
     }
 
@@ -106,9 +112,9 @@ export class GameEngine {
     }
 
     private updatePlayer() {
-        if (this.dir === "left") {
+        if (this.player.dir === "left") {
             this.player.dir = "left";
-        } else if (this.dir === "right") {
+        } else if (this.player.dir === "right") {
             this.player.dir = "right";
         }
 
@@ -212,7 +218,21 @@ export class GameEngine {
                 if (p.x < 0 || p.x + p.width > this.width) p.vx *= -1;
                 p.x += p.vx;
             }
+
+            if (p.flag === 1 && !this.platformBrokenSubstitute.appearance && this.jumpCount === 0) {
+                this.platformBrokenSubstitute.x = p.x;
+                this.platformBrokenSubstitute.y = p.y;
+                this.platformBrokenSubstitute.appearance = true;
+                this.jumpCount++;
+            }
         });
+
+        if (this.platformBrokenSubstitute.appearance) {
+            this.platformBrokenSubstitute.y += 8;
+            if (this.platformBrokenSubstitute.y > this.height) {
+                this.platformBrokenSubstitute.appearance = false;
+            }
+        }
     }
 
     private gameOver() {
@@ -240,6 +260,7 @@ export class GameEngine {
         this.ctx.clearRect(0, 0, this.width, this.height);
 
         this.platforms.forEach(p => p.draw(this.ctx));
+        this.platformBrokenSubstitute.draw(this.ctx);
         this.player.draw(this.ctx);
         this.base.draw(this.ctx);
     }

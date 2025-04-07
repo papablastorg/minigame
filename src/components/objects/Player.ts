@@ -6,8 +6,8 @@ export class Player {
     isMovingLeft = false;
     isMovingRight = false;
     isDead: boolean | string = false;
-    width = 60;
-    height = 60;
+    width = 50;
+    height = 80;
     dir = "left";
     x: number;
     y: number;
@@ -20,21 +20,47 @@ export class Player {
         this.image.src = playerImage;
     }
 
+
     draw(ctx: CanvasRenderingContext2D | null) {
         if (!ctx) return;
 
         if (this.image.complete) {
             ctx.save();
             // TODO: remove if we want to add a character instead of a square
-            ctx.fillStyle = '#4CAF50';
-            ctx.fillRect(this.x, this.y, this.width, this.height);
             // TODO: uncomment and improve if we want to add a character instead of a square
-            // if (this.dir === "left") {
-            //   ctx.scale(-1, 1);
-            //   ctx.drawImage(this.image, -this.x - this.width, this.y, this.width, this.height);
-            // } else {
-            //   ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
-            // }
+            const cropX = 130;
+            const cropY = 60;
+            const cropWidth = 250;
+            const cropHeight = 400;
+
+            const aspectRatio = cropWidth / cropHeight;
+            const drawHeight = this.height;
+            const drawWidth = drawHeight * aspectRatio;
+
+            ctx.fillStyle = '#4CAF50';
+            ctx.fillRect(this.x, this.y, drawWidth, drawHeight);
+
+            // console.log('isMovingLeft',this.isMovingLeft);
+            console.log('this.dir',this.dir);
+
+            if (this.dir === "right") {
+              ctx.scale(-1, 1);
+                  ctx.drawImage(
+                    this.image,
+                    cropX, cropY,
+                    cropWidth, cropHeight,
+                    -this.x - drawWidth, this.y,
+                    drawWidth, drawHeight
+                );
+            } else {
+                ctx.drawImage(
+                    this.image,
+                    cropX, cropY,
+                    cropWidth, cropHeight,
+                    this.x, this.y,
+                    drawWidth, drawHeight
+                );
+            }
             ctx.restore();
         } else {
             ctx.fillStyle = '#4CAF50';
