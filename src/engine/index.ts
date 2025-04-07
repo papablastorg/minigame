@@ -39,11 +39,11 @@ export class GameEngine extends Engine {
     this.store.base = new Base('base', this.canvas.width, this.canvas.height);
     this.store.platformBroken = new PlatformBroken('platformBroken');
     this.store.spring = new Spring('spring');
+    this.register(this.store.spring);
     this.register(this.store.player);
     this.register(this.store.base);
     this.register(this.store.platformBroken);
     this.register(new PlatformManager('platform', this.canvas.width, this.canvas.height));
-    this.register(this.store.spring);
     this.objects.forEach((o) => o.start());
     this.managers.forEach((m) => m.start());
   }

@@ -28,6 +28,7 @@ export class Player extends BaseObject {
     public canvasHeight: number;
     public canvasWidth: number;
     public isOnSpring: boolean = false;
+    private readonly maxFallSpeed = 8;
 
     constructor(name: string, width: number, height: number) {
         super(name);
@@ -132,7 +133,7 @@ export class Player extends BaseObject {
 
         // Movement
         if (this.store.player.isMovingLeft) {
-                this.store.player.x += this.store.player.vx;
+            this.store.player.x += this.store.player.vx;
             this.store.player.vx -= 0.15;
         } else {
             this.store.player.x += this.store.player.vx;
@@ -152,43 +153,47 @@ export class Player extends BaseObject {
         else if (this.store.player.vx < -8) this.store.player.vx = -8;
 
         // Jump on base
-        if ((this.store.player.y + this.store.player.height) > this.store.base.y && this.store.base.y < this.height) {
+        if ((this.store.player.y + this.store.player.height) > this.store.base.y && this.store.base.y < this.canvasHeight) {
             this.store.player.jump();
         }
 
         // Game over
-        if (this.store.base.y > this.height && (this.store.player.y + this.store.player.height) > this.height && this.store.player.isDead !== "lol") {
+        if (this.store.base.y > this.canvasHeight && (this.store.player.y + this.store.player.height) > this.canvasHeight && this.store.player.isDead !== "lol") {
             this.store.player.isDead = true;
         }
 
         // Wrap around
-        if (this.store.player.x > this.width) this.store.player.x = 0 - this.store.player.width;
-        else if (this.store.player.x < 0 - this.store.player.width) this.store.player.x = this.width;
+        if (this.store.player.x > this.canvasWidth) this.store.player.x = 0 - this.store.player.width;
+        else if (this.store.player.x < 0 - this.store.player.width) this.store.player.x = this.canvasWidth;
 
         // Gravity and platform movement
-        if (this.store.player.y >= (this.height / 2) - (this.store.player.height / 2)) {
+        if (this.store.player.y >= (this.canvasHeight / 2) - (this.store.player.height / 2)) {
             this.store.player.y += this.store.player.vy;
-            this.store.player.vy += this.gravity;
+            this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
         } else {
             // Move platforms and base only when player is moving up
-            // TODO: Fix this
-            const platformCount = 20;
             if (this.store.player.vy < 0) {
+                const platformCount = 10;
                 this.store.platforms.forEach((p, i) => {
                     p.y -= this.store.player.vy;
-                    if (p.y > this.height) {
+                    if (p.y > this.canvasHeight) {
                         const currentLevel = this.getCurrentLevel();
-                        this.store.platforms[i] = new Platform(p.y - this.height - (this.height / platformCount), this.width, this.score, currentLevel);
+                        this.store.platforms[i] = new Platform(
+                            p.y - this.canvasHeight - (this.canvasHeight / platformCount), 
+                            this.canvasWidth, 
+                            this.score, 
+                            currentLevel
+                        );
                     }
                 });
 
                 this.store.base.y -= this.store.player.vy;
             }
             
-            this.store.player.vy += this.gravity;
+            this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
             if (this.store.player.vy >= 0) {
                 this.store.player.y += this.store.player.vy;
-                this.store.player.vy += this.gravity;
+                this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
             }
 
             this.score += 1;
