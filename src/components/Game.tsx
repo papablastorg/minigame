@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { GameEngine } from './GameEngine.ts';
+import { GameEngine } from '../engine';
 import './Game.css';
 
 export const Game: React.FC = () => {
@@ -42,18 +42,18 @@ export const Game: React.FC = () => {
       const x = touch.clientX - rect.left;
 
       if (x < rect.width / 2) {
-        gameEngine.player.isMovingLeft = true;
-        gameEngine.player.isMovingRight = false;
+        gameEngine.store.player.isMovingLeft = true;
+        gameEngine.store.player.isMovingRight = false;
       } else {
-        gameEngine.player.isMovingLeft = false;
-        gameEngine.player.isMovingRight = true;
+        gameEngine.store.player.isMovingLeft = false;
+        gameEngine.store.player.isMovingRight = true;
       }
     };
 
     const handleTouchEnd = (e: TouchEvent) => {
       e.preventDefault();
-      gameEngine.player.isMovingLeft = false;
-      gameEngine.player.isMovingRight = false;
+      gameEngine.store.player.isMovingLeft = false;
+      gameEngine.store.player.isMovingRight = false;
     };
 
     canvas.addEventListener('touchstart', handleTouchStart);
@@ -83,22 +83,22 @@ export const Game: React.FC = () => {
 
   const handleLeftButtonDown = () => {
     if (gameEngineRef.current) {
-      gameEngineRef.current.player.isMovingLeft = true;
-      gameEngineRef.current.player.isMovingRight = false;
+      gameEngineRef.current.store.player.isMovingLeft = true;
+      gameEngineRef.current.store.player.isMovingRight = false;
     }
   };
 
   const handleRightButtonDown = () => {
     if (gameEngineRef.current) {
-      gameEngineRef.current.player.isMovingLeft = false;
-      gameEngineRef.current.player.isMovingRight = true;
+      gameEngineRef.current.store.player.isMovingLeft = false;
+      gameEngineRef.current.store.player.isMovingRight = true;
     }
   };
 
   const handleButtonUp = () => {
     if (gameEngineRef.current) {
-      gameEngineRef.current.player.isMovingLeft = false;
-      gameEngineRef.current.player.isMovingRight = false;
+      gameEngineRef.current.store.player.isMovingLeft = false;
+      gameEngineRef.current.store.player.isMovingRight = false;
     }
   };
 
@@ -111,21 +111,21 @@ export const Game: React.FC = () => {
 
     if (x < rect.width / 2) {
       if (gameEngineRef.current) {
-        gameEngineRef.current.player.isMovingLeft = true;
-        gameEngineRef.current.player.isMovingRight = false;
+        gameEngineRef.current.store.player.isMovingLeft = true;
+        gameEngineRef.current.store.player.isMovingRight = false;
       }
     } else {
       if (gameEngineRef.current) {
-        gameEngineRef.current.player.isMovingLeft = false;
-        gameEngineRef.current.player.isMovingRight = true;
+        gameEngineRef.current.store.player.isMovingLeft = false;
+        gameEngineRef.current.store.player.isMovingRight = true;
       }
     }
   };
 
   const handleCanvasMouseUp = () => {
     if (gameEngineRef.current) {
-      gameEngineRef.current.player.isMovingLeft = false;
-      gameEngineRef.current.player.isMovingRight = false;
+      gameEngineRef.current.store.player.isMovingLeft = false;
+      gameEngineRef.current.store.player.isMovingRight = false;
     }
   };
 

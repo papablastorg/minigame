@@ -4,16 +4,16 @@ import platformImage3 from '/images/3.png';
 import platformImage4 from '/images/platforma.png';
 
 export class Platform {
-    x: number;
-    y: number;
-    width = 100;
-    height = 15;
-    flag = 0;
-    state = 0;
-    type: number;
-    vx = 1;
-    moved = 0;
-    image: HTMLImageElement;
+    public x: number;
+    public y: number;
+    public width = 100;
+    public height = 15;
+    public flag = 0;
+    public state = 0;
+    public type: number;
+    public vx = 1;
+    public moved = 0;
+    public image: HTMLImageElement;
 
     constructor(position: number, width: number, score: number, broken: number, level: number) {
         this.x = Math.random() * (width - this.width);
@@ -72,15 +72,15 @@ export class Platform {
         }
 
         // If image is loaded, draw it
-        if (this.image.complete) {          
+        if (this.image.complete) {
             // TODO: remove if we want to use different platforms instead of rectangles
             // ctx.fillStyle = '#8B4513';
             // ctx.fillRect(this.x, this.y, this.width, this.height);
             // TODO: uncomment if we want to use different platforms instead of rectangles
-            const cropY = 210;       
-            const cropHeight = 90;    
-            const cropX = 80;         
-            const cropWidth = 350; 
+            const cropY = 210;
+            const cropHeight = 90;
+            const cropX = 80;
+            const cropWidth = 350;
 
             // const aspectRatio = cropWidth / cropHeight;
             // const drawHeight = this.height;
