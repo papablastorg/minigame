@@ -12,6 +12,7 @@
   "dependencies": {
     "@twa-dev/sdk": "^6.9.2",
     "@vitejs/plugin-basic-ssl": "^2.0.0",
+    "classnames": "^2.5.1",
     "lucide-react": "^0.344.0",
     "phaser": "^3.80.1",
     "react": "^18.3.1",
