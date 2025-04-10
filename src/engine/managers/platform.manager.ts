@@ -1,5 +1,6 @@
 import { Manager } from '../interfaces.ts';
 import { Platform } from '../objects/Platform.ts';
+// import { Star } from '../objects/Star.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class PlatformManager extends Manager {
@@ -21,24 +22,50 @@ export class PlatformManager extends Manager {
   }
 
   draw(ctx: CanvasRenderingContext2D) {
+    // this.store.stars.forEach((s) => s.draw(ctx)); 
+    // if(this.store.star) {
+    //   this.store.star.draw(ctx);
+    // }
     this.store.platforms.forEach((p) => p.draw(ctx))
-
+    // console.log('draw stars',this.store.stars);  
+    console.log('draw platforms',this.store.platforms);
   }
 
   start() {
     this.jumpCount = 0;
     this.generatePlatforms();
+    // this.createStars();
   }
 
   private generatePlatforms() {
     this.platforms = [];
     const currentLevel = this.store.player.getCurrentLevel();
     for (let i = 0; i < this.platformCount; i++) {
-        this.platforms.push(new Platform(this.position, this.width, this.store.player.score, currentLevel));
+        this.platforms.push(new Platform(this.position, this.width, this.store.player.score, currentLevel, '#8B4513'));
         this.position += (this.height / this.platformCount);
     } 
     this.store.platforms = this.platforms;
   }
+
+//   private createStars() {
+//     const platforms = this.store.platforms; // Получаем все платформы
+//     const starsToDraw = 3; // Количество звезд для отрисовки
+//     let drawnStars = 0; // Счетчик отрисованных звезд
+
+//     // Ищем подходящие платформы
+//     for (const p of platforms) {
+//         if (p.type !== 4 && drawnStars < starsToDraw) {
+//             const star = new Star(); // Создаем новую звезду
+//             const targetX = p.x + p.width / 2 - star.width / 2;
+//             const targetY = p.y - p.height - 10;
+//             star.x = targetX;
+//             star.y = targetY;
+
+//             this.store.stars.push(star); // Добавляем звезду в массив звезд
+//             drawnStars++; // Увеличиваем счетчик отрисованных звезд
+//         }
+//     }
+// }
 
   private updatePlatforms() {
     this.platforms.forEach(p => {

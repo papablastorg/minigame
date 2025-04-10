@@ -4,6 +4,7 @@ import platformImage3 from '/images/broken_platform.png';
 import platformImage4 from '/images/flash_platform.png';
 
 import StoreInstance, { Store } from '../store/index.ts';
+import { Star } from './Star.ts';
 
 export class Platform {
    public x: number;
@@ -18,11 +19,19 @@ export class Platform {
     public image: HTMLImageElement;
     public types: number[];
     public store: Store = StoreInstance;
+    public color: string;
+    public object: Star | null = null;
 
-    constructor(position: number, width: number, score: number, level: number) {
+    constructor(position: number, width: number, score: number, level: number, platformColor: string, object?: Star) {
+        // console.log('Platform position',position);
         this.x = Math.random() * (width - this.width);
         this.y = position;
         this.image = new Image();
+        this.color = platformColor;
+
+        if (object) {
+            this.object = object; // Сохраняем объект, если он передан
+        }
 
         // Select platform image based on level
         if (level === 1) {
@@ -75,8 +84,18 @@ export class Platform {
             return;
         }
 
+        console.log({x: this.x, y: this.y});
+
+        console.log('this.object',this.object);
+
+        if (this.object) {
+            console.log('ctx',ctx);
+            // console.log('object',this.object);
+            this.object.draw(ctx); // Вызываем метод draw у объекта
+        }
+
         // If image is loaded, draw it
-        if (this.image.complete) {          
+        if (!this.image.complete) {          
             const cropY = 8;       
             const cropHeight = 110;    
             const cropX = 3;         
@@ -90,7 +109,7 @@ export class Platform {
             );
         } else {
             // Fallback rectangle if image is not loaded
-            ctx.fillStyle = '#8B4513';
+            ctx.fillStyle = this.color;
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }

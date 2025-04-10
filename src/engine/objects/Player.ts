@@ -5,6 +5,7 @@ import playerImageFall from '/images/player_jump.png';
 import { BaseObject } from '../interfaces.ts';
 import { Platform } from './Platform.ts';
 import StoreInstance, { Store } from '../store/index.ts';
+// import { Star } from './Star.ts';
 
 export class Player extends BaseObject {
     public vy = 6;
@@ -178,15 +179,56 @@ export class Player extends BaseObject {
                     p.y -= this.store.player.vy;
                     if (p.y > this.canvasHeight) {
                         const currentLevel = this.getCurrentLevel();
-                        this.store.platforms[i] = new Platform(
+
+                        const platformColor = '#FF0000';  // цвеет новой платформы
+                        // console.log('Create Platform',p.y, {i});
+
+                        const platform = new Platform(
                             p.y - this.canvasHeight - (this.canvasHeight / platformCount), 
                             this.canvasWidth, 
                             this.score, 
-                            currentLevel
+                            currentLevel, 
+                            platformColor,
+                            this.store.star // Передаем объект Star
                         );
+
+                        // Устанавливаем координаты звезды на платформе
+                        this.store.star.x = platform.x + (platform.width / 2); // Центрируем звезду по X
+                        this.store.star.y = platform.y - 10; // Устанавливаем Y немного выше платформы
+
+                        console.log('platform',platform);
+
+                        this.store.platforms[i] = platform;
+                    
+                        // this.store.platforms[i] = new Platform(
+                        //         p.y - this.canvasHeight - (this.canvasHeight / platformCount), 
+                        //         this.canvasWidth, 
+                        //     this.score, 
+                        //     currentLevel, 
+                        //     platformColor,
+                        //     this.store.star,
+                        // );
+
+                        // this.store.star = new Star('star');
+                        // const targetY = p.y
+                        // const targetX = p.x;
+                        // star.y = targetY;
+                        // star.x = targetX;
+                        // // console.log({targetX, targetY});
+            
+                        // if (star.y > this.height / 1.1) {
+                        //     star.state = 0;
+                        // }
+
+                        // console.log({star,p, i});
+                        // console.log({y:p.y - this.canvasHeight - (this.canvasHeight / platformCount)})
+                      
+
+                        // this.store.stars.push(star);
                     }
                 });
-
+            
+            
                 this.store.base.y -= this.store.player.vy;
             }
             
