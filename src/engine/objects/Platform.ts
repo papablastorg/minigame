@@ -21,33 +21,20 @@ export class Platform {
     public types: number[];
     public store: Store = StoreInstance;
     public attachedObjects: BaseObject[] = [];
-    private objectSpacingConfig: PlatformObjectSpacingConfig = {
-        default: { verticalSpacing: 0 }
-    };
+    private objectSpacingConfig: PlatformObjectSpacingConfig = { default: { verticalSpacing: 0 } };
 
     constructor(position: number, width: number, score: number, level: number, objects?: BaseObject[]) {
         this.x = Math.random() * (width - this.width);
         this.y = position;
         this.image = new Image();
 
-        if (objects) {
-            this.attachedObjects = objects;
-        }
-
-        // Set default spacing for attached objects
+        if (objects) this.attachedObjects = objects;
         this.setObjectSpacing("Spring", { verticalSpacing: -8 });
         this.setObjectSpacing("Star", { verticalSpacing: -5 });
+        if (level === 1) this.image.src = platformImage1;
+        else if (level === 2) this.image.src = platformImage2;
+        else this.image.src = platformImage3;
 
-        // Select platform image based on level
-        if (level === 1) {
-            this.image.src = platformImage1;
-        } else if (level === 2) {
-            this.image.src = platformImage2;
-        } else {
-            this.image.src = platformImage3;
-        }
-
-        // Platform types setup
         if (score >= 5000) this.types = [2, 3, 3, 3, 4, 4, 4, 4];
         else if (score >= 2000 && score < 5000) this.types = [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
         else if (score >= 1000 && score < 2000) this.types = [2, 2, 2, 3, 3, 3, 3, 3];
@@ -57,24 +44,16 @@ export class Platform {
 
         this.type = this.types[Math.floor(Math.random() * this.types.length)];
 
-        if (this.type === 3 && this.store.player.broken < 1) {
-            this.store.player.broken++;
-        } else if (this.type === 3 && this.store.player.broken >= 1) {
+        if (this.type === 3 && this.store.player.broken < 1) this.store.player.broken++;
+        else if (this.type === 3 && this.store.player.broken >= 1) {
             this.type = 1;
             this.store.player.broken = 0;
         }
 
-        // Select platform image based on type
-        if (this.type === 1) {
-            this.image.src = platformImage1;
-        } else if (this.type === 2) {
-            this.image.src = platformImage2;
-        } else if (this.type === 3) {
-            this.image.src = platformImage3;
-        } else if (this.type === 4) {
-            this.image.src = platformImage4;
-        }
-
+        if (this.type === 1) this.image.src = platformImage1;
+        else if (this.type === 2) this.image.src = platformImage2;
+        else if (this.type === 3) this.image.src = platformImage3;
+        else if (this.type === 4) this.image.src = platformImage4;
         this.moved = 0;
         this.vx = 1;
     }
@@ -97,15 +76,13 @@ export class Platform {
 
     draw(ctx: CanvasRenderingContext2D | null) {
         if (!ctx) return;
-        if ((this.type === 3 && this.flag === 1) || (this.type === 4 && this.state === 1)) {
-            return;
-        }
+        if ((this.type === 3 && this.flag === 1) || (this.type === 4 && this.state === 1)) return;
 
-        if (this.image.complete) {          
-            const cropY = 8;       
-            const cropHeight = 110;    
-            const cropX = 3;         
-            const cropWidth = 295; 
+        if (this.image.complete) {
+            const cropY = 8;
+            const cropHeight = 110;
+            const cropX = 3;
+            const cropWidth = 295;
             ctx.drawImage(
                 this.image,
                 cropX, cropY,
@@ -117,18 +94,10 @@ export class Platform {
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
-
-        // Draw attached objects based on platform type
         this.updateAttachedObjectsPosition();
         this.attachedObjects.forEach(object => {
-            // Stars can be drawn on all platform types
-            if (object.constructor.name === 'Star') {
-                object.draw(ctx);
-            }
-            // Springs can only be drawn on platform types 1 and 2
-            else if (object.constructor.name === 'Spring' && (this.type === 1 || this.type === 2)) {
-                object.draw(ctx);
-            }
+            if (object.constructor.name === 'Star') object.draw(ctx);
+            else if (object.constructor.name === 'Spring' && (this.type === 1 || this.type === 2)) object.draw(ctx);
         });
     }
 
@@ -137,13 +106,9 @@ export class Platform {
             if (this.isPositionable(object)) {
                 const objectType = object.constructor.name;
                 const spacing = this.objectSpacingConfig[objectType] || this.objectSpacingConfig.default;
-                
                 object.x = this.x + (this.width / 2) - (object.width / 2);
                 object.y = this.y - object.height - spacing.verticalSpacing;
-                
-                if (object instanceof Spring) {
-                    object.state = 0;
-                }
+                if (object instanceof Spring) object.state = 0;
             }
         });
     }
@@ -167,21 +132,14 @@ export class Platform {
     }
 
     update() {
-        // Update platform position for moving platforms
         if (this.type === 2) {
-            if (this.x < 0 || this.x + this.width > window.innerWidth) {
-                this.vx *= -1;
-            }
+            if (this.x < 0 || this.x + this.width > window.innerWidth) this.vx *= -1
             this.x += this.vx;
         }
 
-        // Clean up objects that are going off screen
         this.attachedObjects.forEach((obj, index) => {
             if (this.y > window.innerHeight) {
-                if (obj instanceof Spring) {
-                    // Clean up spring animation timer when it goes off screen
-                    obj.cleanup();
-                }
+                if (obj instanceof Spring) obj.cleanup();
                 this.attachedObjects.splice(index, 1);
             }
         });

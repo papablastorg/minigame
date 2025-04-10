@@ -27,7 +27,7 @@ export abstract class BaseObject {
   }
   update() {}
   start() {}
-  draw(ctx: CanvasRenderingContext2D | null) {}
+  draw(_ctx: CanvasRenderingContext2D | null) {}
 }
 
 export abstract class Engine {

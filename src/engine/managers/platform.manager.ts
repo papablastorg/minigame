@@ -21,6 +21,7 @@ export class PlatformManager extends Manager {
 
   update() {
     this.updatePlatforms();
+    this.generatePlatforms();
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -29,63 +30,76 @@ export class PlatformManager extends Manager {
 
   start() {
     this.jumpCount = 0;
-    this.generatePlatforms();
+    this.initialGeneratePlatform();
   }
 
   public getObjectsForPlatform(): BaseObject[] {
     const objects: BaseObject[] = [];
     const random = Math.random();
     const currentLevel = this.store.player.getCurrentLevel();
-    
-    // Calculate star spawn chance based on level
-    let starChance = 0.3; // Base chance 30%
-    let springChance = 0.05; // Base chance 5%
+
+    let starChance = 0.3;
+    let springChance = 0.05;
     if (currentLevel === 2) {
-        starChance = 0.4; // 40% chance on level 2
-        springChance = 0.04; // 4% chance on level 2
+        starChance = 0.4;
+        springChance = 0.04;
     } else if (currentLevel === 3) {
-        starChance = 0.5; // 50% chance on level 3
-        springChance = 0.03; // 3% chance on level 3
+        starChance = 0.5;
+        springChance = 0.03;
     }
-    
-    // First check for spring (5% chance)
     if (random < springChance) {
         const spring = new Spring('spring');
         objects.push(spring);
     }
-    // If no spring spawned, check for star (chance increases with level)
     else if (random < starChance) {
         const star = new Star('star');
         objects.push(star);
     }
-    // Otherwise no object spawns
 
     return objects;
   }
 
-  private generatePlatforms() {
+  private initialGeneratePlatform() {
     this.platforms = [];
     const currentLevel = this.store.player.getCurrentLevel();
-    
-    for (let i = 0; i < this.platformCount; i++) {
-      // Get objects that should spawn on this platform based on spawn rates
-      const platformObjects = this.getObjectsForPlatform();
 
+    for (let i = 0; i < this.platformCount; i++) {
       const platform = new Platform(
         this.position,
         this.width,
         this.store.player.score,
         currentLevel,
-        platformObjects
+        this.getObjectsForPlatform()
       );
-      
+
       platform.setObjectSpacing("Spring", { verticalSpacing: -8 });
       platform.setObjectSpacing("Star", { verticalSpacing: -5 });
       this.platforms.push(platform);
       this.position += (this.height / this.platformCount);
-    } 
-    
+    }
+
     this.store.platforms = this.platforms;
+  }
+
+  private generatePlatforms() {
+    if (this.store.player.y <= (this.height / 2) - (this.store.player.height / 2)) {
+      if (this.store.player.vy < 0) {
+        this.store.platforms.forEach( (p, i) => {
+          p.y -= this.store.player.vy;
+          if (p.y > this.height) {
+            const currentLevel = this.store.player.getCurrentLevel();
+            this.store.platforms[i] = new Platform(
+              p.y - this.height - (this.height / this.platformCount),
+              this.width,
+              this.store.player.score,
+              currentLevel,
+              this.getObjectsForPlatform()
+            );
+          }
+        } );
+        this.store.base.y -= this.store.player.vy;
+      }
+    }
   }
 
   private updatePlatforms() {
