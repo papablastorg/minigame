@@ -3,13 +3,14 @@ import StoreInstance, { Store } from '../store';
 import springImage from '/images/jump_point.png';
 
 export class Spring extends BaseObject {
-   public x: number;
+    public x: number;
     public y: number;
     public width = 50;
     public height = 46;
     public state = 0;
     public store: Store = StoreInstance;
     public image: HTMLImageElement;
+    private animationTimer: number | null = null;
 
     constructor(name: string) {
         super(name);
@@ -41,28 +42,24 @@ export class Spring extends BaseObject {
                 x, y,
                 drawWidth, drawHeight
             );
-        } else {
-            // Fallback rectangle if image is not loaded
-            ctx.fillStyle = '#4169E1';  // Royal Blue color for spring
-            ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
 
-    public update() {
-        const p = this.store.platforms[0];  // Get the first platform
-
-        if (p.type === 1 || p.type === 2) {  // Normal or moving platform
-            const targetX = p.x + p.width / 2 - this.store.spring.width / 2;
-            const targetY = p.y - p.height - 10;
-            this.store.spring.x = targetX;
-            this.store.spring.y = targetY;
-
-            if (this.store.spring.y > this.height / 1.1) {
-                this.store.spring.state = 0;
-            }
-        } else {
-            this.store.spring.x = 0 - this.store.spring.width;
-            this.store.spring.y = 0 - this.store.spring.height;
+    update() {
+        // If spring is in compressed state, schedule reset
+        if (this.state === 1 && !this.animationTimer) {
+            this.animationTimer = window.setTimeout(() => {
+                this.state = 0;
+                this.animationTimer = null;
+            }, 200);
         }
     }
-} 
+
+    // Cleanup timer when spring is removed/reset
+    cleanup() {
+        if (this.animationTimer) {
+            clearTimeout(this.animationTimer);
+            this.animationTimer = null;
+        }
+    }
+}

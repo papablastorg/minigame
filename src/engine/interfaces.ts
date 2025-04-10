@@ -1,3 +1,12 @@
+export interface ObjectSpacing {
+    verticalSpacing: number;
+}
+
+export interface PlatformObjectSpacingConfig {
+    [key: string]: ObjectSpacing;
+    default: ObjectSpacing;
+}
+
 export abstract class Manager {
   public name: string;
   constructor(name: string) {
@@ -10,7 +19,6 @@ export abstract class Manager {
 
   start() {}
 }
-
 
 export abstract class BaseObject {
   public name: string;

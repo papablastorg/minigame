@@ -4,8 +4,9 @@ import playerImageFall from '/images/player_jump.png';
 
 import { BaseObject } from '../interfaces.ts';
 import { Platform } from './Platform.ts';
+import { Spring } from './Spring.ts';
 import StoreInstance, { Store } from '../store/index.ts';
-// import { Star } from './Star.ts';
+import { PlatformManager } from '../managers/platform.manager.ts';
 
 export class Player extends BaseObject {
     public vy = 6;
@@ -28,8 +29,8 @@ export class Player extends BaseObject {
     public broken: number;
     public canvasHeight: number;
     public canvasWidth: number;
-    public isOnSpring: boolean = false;
     private readonly maxFallSpeed = 8;
+    private platformManager: PlatformManager;
 
     constructor(name: string, width: number, height: number) {
         super(name);
@@ -45,6 +46,7 @@ export class Player extends BaseObject {
         this.imageFall.src = playerImageFall;
         this.gravity = 0.2;
         this.broken = 0;
+        this.platformManager = new PlatformManager('platformManager', width, height);
     }
 
     start() {
@@ -60,7 +62,7 @@ export class Player extends BaseObject {
             
             // Select image based on player state
             let currentImage;
-            if (this.isOnSpring) {
+            if (this.vy < 0) {
                 currentImage = this.imageJumped;
             } else if (this.vy > 0) {
                 currentImage = this.imageFall;
@@ -115,10 +117,6 @@ export class Player extends BaseObject {
     jumpHigh() {
         this.vy = -16;
         this.vx = 0;
-    }
-
-    setSpringState(isOnSpring: boolean) {
-        this.isOnSpring = isOnSpring;
     }
 
     land() {
@@ -179,52 +177,14 @@ export class Player extends BaseObject {
                     p.y -= this.store.player.vy;
                     if (p.y > this.canvasHeight) {
                         const currentLevel = this.getCurrentLevel();
-
-                        const platformColor = '#FF0000';  // цвеет новой платформы
-                        // console.log('Create Platform',p.y, {i});
-
                         const platform = new Platform(
                             p.y - this.canvasHeight - (this.canvasHeight / platformCount), 
                             this.canvasWidth, 
                             this.score, 
                             currentLevel, 
-                            platformColor,
-                            this.store.star // Передаем объект Star
+                            this.platformManager.getObjectsForPlatform()
                         );
-
-                        // Устанавливаем координаты звезды на платформе
-                        this.store.star.x = platform.x + (platform.width / 2); // Центрируем звезду по X
-                        this.store.star.y = platform.y - 10; // Устанавливаем Y немного выше платформы
-
-                        console.log('platform',platform);
-
                         this.store.platforms[i] = platform;
-                    
-                        // this.store.platforms[i] = new Platform(
-                        //         p.y - this.canvasHeight - (this.canvasHeight / platformCount), 
-                        //         this.canvasWidth, 
-                        //     this.score, 
-                        //     currentLevel, 
-                        //     platformColor,
-                        //     this.store.star,
-                        // );
-
-                        // this.store.star = new Star('star');
-                        // const targetY = p.y
-                        // const targetX = p.x;
-                        // star.y = targetY;
-                        // star.x = targetX;
-                        // // console.log({targetX, targetY});
-            
-                        // if (star.y > this.height / 1.1) {
-                        //     star.state = 0;
-                        // }
-
-                        // console.log({star,p, i});
-                        // console.log({y:p.y - this.canvasHeight - (this.canvasHeight / platformCount)})
-                      
-
-                        // this.store.stars.push(star);
                     }
                 });
             
@@ -252,23 +212,21 @@ export class Player extends BaseObject {
             const platformLeft = p.x;
             const platformRight = p.x + p.width;
 
-            // Check spring collision
-            if (this.store.player.vy > 0 && this.store.spring.state === 0 &&
-                (playerLeft + 15 < this.store.spring.x + this.store.spring.width) &&
-                (playerRight - 15 > this.store.spring.x) &&
-                (playerBottom > this.store.spring.y) &&
-                (playerBottom < this.store.spring.y + this.store.spring.height)) {
-                this.store.spring.state = 1;
-                this.store.player.setSpringState(true);
+            // Check for spring collisions first
+            const spring = p.attachedObjects.find(obj => obj instanceof Spring) as Spring | undefined;
+            if (spring && 
+                this.store.player.vy > 0 && 
+                spring.state === 0 &&
+                (playerLeft + 15 < spring.x + spring.width) &&
+                (playerRight - 15 > spring.x) &&
+                (playerBottom > spring.y) &&
+                (playerBottom < spring.y + spring.height)) {
+                spring.state = 1;
                 this.store.player.jumpHigh();
                 return;
             }
 
-            // Reset spring state when player starts falling
-            if (this.store.player.vy > 0) {
-                this.store.player.setSpringState(false);
-            }
-
+            // Platform collision check
             if (this.store.player.vy > 0 && p.state === 0 &&
                 playerBottom > platformTop &&
                 playerBottom < platformBottom &&

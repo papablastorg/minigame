@@ -4,10 +4,11 @@ import platformImage3 from '/images/broken_platform.png';
 import platformImage4 from '/images/flash_platform.png';
 
 import StoreInstance, { Store } from '../store/index.ts';
-import { Star } from './Star.ts';
+import { BaseObject, ObjectSpacing, PlatformObjectSpacingConfig } from '../interfaces.ts';
+import { Spring } from './Spring.ts';
 
 export class Platform {
-   public x: number;
+    public x: number;
     public y: number;
     public width = 100;
     public height = 25;
@@ -19,19 +20,23 @@ export class Platform {
     public image: HTMLImageElement;
     public types: number[];
     public store: Store = StoreInstance;
-    public color: string;
-    public object: Star | null = null;
+    public attachedObjects: BaseObject[] = [];
+    private objectSpacingConfig: PlatformObjectSpacingConfig = {
+        default: { verticalSpacing: 0 }
+    };
 
-    constructor(position: number, width: number, score: number, level: number, platformColor: string, object?: Star) {
-        // console.log('Platform position',position);
+    constructor(position: number, width: number, score: number, level: number, objects?: BaseObject[]) {
         this.x = Math.random() * (width - this.width);
         this.y = position;
         this.image = new Image();
-        this.color = platformColor;
 
-        if (object) {
-            this.object = object; // Сохраняем объект, если он передан
+        if (objects) {
+            this.attachedObjects = objects;
         }
+
+        // Set default spacing for attached objects
+        this.setObjectSpacing("Spring", { verticalSpacing: -8 });
+        this.setObjectSpacing("Star", { verticalSpacing: -5 });
 
         // Select platform image based on level
         if (level === 1) {
@@ -42,11 +47,7 @@ export class Platform {
             this.image.src = platformImage3;
         }
 
-        // Platform types
-        // 1: Normal
-        // 2: Moving
-        // 3: Breakable
-        // 4: Vanishable
+        // Platform types setup
         if (score >= 5000) this.types = [2, 3, 3, 3, 4, 4, 4, 4];
         else if (score >= 2000 && score < 5000) this.types = [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
         else if (score >= 1000 && score < 2000) this.types = [2, 2, 2, 3, 3, 3, 3, 3];
@@ -64,18 +65,34 @@ export class Platform {
         }
 
         // Select platform image based on type
-        if (this.type === 1) { // Normal platform
+        if (this.type === 1) {
             this.image.src = platformImage1;
-        } else if (this.type === 2) { // Moving platform
+        } else if (this.type === 2) {
             this.image.src = platformImage2;
-        } else if (this.type === 3) { // Breakable platform
+        } else if (this.type === 3) {
             this.image.src = platformImage3;
-        } else if (this.type === 4) { // Vanishable platform
+        } else if (this.type === 4) {
             this.image.src = platformImage4;
         }
 
         this.moved = 0;
         this.vx = 1;
+    }
+
+    public attachObject(object: BaseObject) {
+        this.attachedObjects.push(object);
+        this.updateAttachedObjectsPosition();
+    }
+
+    public detachObject(object: BaseObject) {
+        const index = this.attachedObjects.indexOf(object);
+        if (index > -1) {
+            this.attachedObjects.splice(index, 1);
+        }
+    }
+
+    public setObjectSpacing(objectType: string, spacing: ObjectSpacing) {
+        this.objectSpacingConfig[objectType] = spacing;
     }
 
     draw(ctx: CanvasRenderingContext2D | null) {
@@ -84,18 +101,7 @@ export class Platform {
             return;
         }
 
-        console.log({x: this.x, y: this.y});
-
-        console.log('this.object',this.object);
-
-        if (this.object) {
-            console.log('ctx',ctx);
-            // console.log('object',this.object);
-            this.object.draw(ctx); // Вызываем метод draw у объекта
-        }
-
-        // If image is loaded, draw it
-        if (!this.image.complete) {          
+        if (this.image.complete) {          
             const cropY = 8;       
             const cropHeight = 110;    
             const cropX = 3;         
@@ -108,9 +114,78 @@ export class Platform {
                 this.width, this.height
             );
         } else {
-            // Fallback rectangle if image is not loaded
-            ctx.fillStyle = this.color;
+            ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
+
+        // Draw attached objects based on platform type
+        this.updateAttachedObjectsPosition();
+        this.attachedObjects.forEach(object => {
+            // Stars can be drawn on all platform types
+            if (object.constructor.name === 'Star') {
+                object.draw(ctx);
+            }
+            // Springs can only be drawn on platform types 1 and 2
+            else if (object.constructor.name === 'Spring' && (this.type === 1 || this.type === 2)) {
+                object.draw(ctx);
+            }
+        });
+    }
+
+    private updateAttachedObjectsPosition() {
+        this.attachedObjects.forEach(object => {
+            if (this.isPositionable(object)) {
+                const objectType = object.constructor.name;
+                const spacing = this.objectSpacingConfig[objectType] || this.objectSpacingConfig.default;
+                
+                object.x = this.x + (this.width / 2) - (object.width / 2);
+                object.y = this.y - object.height - spacing.verticalSpacing;
+                
+                if (object instanceof Spring) {
+                    object.state = 0;
+                }
+            }
+        });
+    }
+
+    private isPositionable(object: BaseObject): object is BaseObject & {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    } {
+        return (
+            'x' in object &&
+            'y' in object &&
+            'width' in object &&
+            'height' in object &&
+            typeof object.x === 'number' &&
+            typeof object.y === 'number' &&
+            typeof object.width === 'number' &&
+            typeof object.height === 'number'
+        );
+    }
+
+    update() {
+        // Update platform position for moving platforms
+        if (this.type === 2) {
+            if (this.x < 0 || this.x + this.width > window.innerWidth) {
+                this.vx *= -1;
+            }
+            this.x += this.vx;
+        }
+
+        // Clean up objects that are going off screen
+        this.attachedObjects.forEach((obj, index) => {
+            if (this.y > window.innerHeight) {
+                if (obj instanceof Spring) {
+                    // Clean up spring animation timer when it goes off screen
+                    obj.cleanup();
+                }
+                this.attachedObjects.splice(index, 1);
+            }
+        });
+
+        this.updateAttachedObjectsPosition();
     }
 }

@@ -1,6 +1,7 @@
-import { Manager } from '../interfaces.ts';
+import { Manager, BaseObject } from '../interfaces.ts';
 import { Platform } from '../objects/Platform.ts';
-// import { Star } from '../objects/Star.ts';
+import { Spring } from '../objects/Spring.ts';
+import { Star } from '../objects/Star.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class PlatformManager extends Manager {
@@ -17,69 +18,90 @@ export class PlatformManager extends Manager {
     this.width = width;
     this.height = height;
   }
+
   update() {
     this.updatePlatforms();
   }
 
   draw(ctx: CanvasRenderingContext2D) {
-    // this.store.stars.forEach((s) => s.draw(ctx)); 
-    // if(this.store.star) {
-    //   this.store.star.draw(ctx);
-    // }
-    this.store.platforms.forEach((p) => p.draw(ctx))
-    // console.log('draw stars',this.store.stars);  
-    console.log('draw platforms',this.store.platforms);
+    this.store.platforms.forEach((p) => p.draw(ctx));
   }
 
   start() {
     this.jumpCount = 0;
     this.generatePlatforms();
-    // this.createStars();
+  }
+
+  public getObjectsForPlatform(): BaseObject[] {
+    const objects: BaseObject[] = [];
+    const random = Math.random();
+    const currentLevel = this.store.player.getCurrentLevel();
+    
+    // Calculate star spawn chance based on level
+    let starChance = 0.3; // Base chance 30%
+    let springChance = 0.05; // Base chance 5%
+    if (currentLevel === 2) {
+        starChance = 0.4; // 40% chance on level 2
+        springChance = 0.04; // 4% chance on level 2
+    } else if (currentLevel === 3) {
+        starChance = 0.5; // 50% chance on level 3
+        springChance = 0.03; // 3% chance on level 3
+    }
+    
+    // First check for spring (5% chance)
+    if (random < springChance) {
+        const spring = new Spring('spring');
+        objects.push(spring);
+    }
+    // If no spring spawned, check for star (chance increases with level)
+    else if (random < starChance) {
+        const star = new Star('star');
+        objects.push(star);
+    }
+    // Otherwise no object spawns
+
+    return objects;
   }
 
   private generatePlatforms() {
     this.platforms = [];
     const currentLevel = this.store.player.getCurrentLevel();
+    
     for (let i = 0; i < this.platformCount; i++) {
-        this.platforms.push(new Platform(this.position, this.width, this.store.player.score, currentLevel, '#8B4513'));
-        this.position += (this.height / this.platformCount);
+      // Get objects that should spawn on this platform based on spawn rates
+      const platformObjects = this.getObjectsForPlatform();
+
+      const platform = new Platform(
+        this.position,
+        this.width,
+        this.store.player.score,
+        currentLevel,
+        platformObjects
+      );
+      
+      platform.setObjectSpacing("Spring", { verticalSpacing: -8 });
+      platform.setObjectSpacing("Star", { verticalSpacing: -5 });
+      this.platforms.push(platform);
+      this.position += (this.height / this.platformCount);
     } 
+    
     this.store.platforms = this.platforms;
   }
-
-//   private createStars() {
-//     const platforms = this.store.platforms; // Получаем все платформы
-//     const starsToDraw = 3; // Количество звезд для отрисовки
-//     let drawnStars = 0; // Счетчик отрисованных звезд
-
-//     // Ищем подходящие платформы
-//     for (const p of platforms) {
-//         if (p.type !== 4 && drawnStars < starsToDraw) {
-//             const star = new Star(); // Создаем новую звезду
-//             const targetX = p.x + p.width / 2 - star.width / 2;
-//             const targetY = p.y - p.height - 10;
-//             star.x = targetX;
-//             star.y = targetY;
-
-//             this.store.stars.push(star); // Добавляем звезду в массив звезд
-//             drawnStars++; // Увеличиваем счетчик отрисованных звезд
-//         }
-//     }
-// }
 
   private updatePlatforms() {
     this.platforms.forEach(p => {
       if (p.type === 2) {
-          if (p.x < 0 || p.x + p.width > this.width) p.vx *= -1;
-          p.x += p.vx;
+        if (p.x < 0 || p.x + p.width > this.width) p.vx *= -1;
+        p.x += p.vx;
       }
-  });
+      p.update();
+    });
 
     if (this.store.platformBroken.appearance) {
-        this.store.platformBroken.y += 8;
-        if (this.store.platformBroken.y > this.height) {
-            this.store.platformBroken.appearance = false;
-        }
+      this.store.platformBroken.y += 8;
+      if (this.store.platformBroken.y > this.height) {
+        this.store.platformBroken.appearance = false;
+      }
     }
   }
 }

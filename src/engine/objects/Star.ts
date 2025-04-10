@@ -9,20 +9,32 @@ export class Star extends BaseObject {
     public width = 40;
     public height = 40;
 
-    constructor(name: string, x: number, y: number) {
+    constructor(name: string) {
         super(name);
-        this.x = x;
-        this.y = y;
+        this.x = 0;
+        this.y = 0;
         this.width = 20;
         this.height = 20;
     }
 
     draw(ctx: CanvasRenderingContext2D) {
-        // console.log('Drawing star at', { x: this.x, y: this.y, state: this.state });
-        if (ctx) {
-            ctx.fillStyle = '#FFD700'; // Цвет звезды
-            ctx.fillRect(this.x, this.y, this.width, this.height); // Рисуем квадрат
+        if (!ctx) return;
+        
+        ctx.save();
+        ctx.fillStyle = '#FFD700';
+        ctx.strokeStyle = '#FFA500';
+        ctx.lineWidth = 2;
+        
+        ctx.beginPath();
+        for (let i = 0; i < 5; i++) {
+            const x1 = this.x + this.width/2 * Math.cos(i * 4 * Math.PI / 5 - Math.PI/2);
+            const y1 = this.y + this.width/2 * Math.sin(i * 4 * Math.PI / 5 - Math.PI/2);
+            if (i === 0) ctx.moveTo(x1, y1);
+            else ctx.lineTo(x1, y1);
         }
-    
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
     }
 }
