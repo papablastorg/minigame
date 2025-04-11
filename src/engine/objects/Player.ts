@@ -108,12 +108,10 @@ export class Player extends BaseObject {
 
     jump() {
         this.vy = -8;
-        this.vx = 0;
     }
 
     jumpHigh() {
         this.vy = -16;
-        this.vx = 0;
     }
 
     setSpringState(isOnSpring: boolean) {

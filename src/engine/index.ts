@@ -54,6 +54,7 @@ export class GameEngine extends Engine {
   }
 
   public restart() {
+    this.clear();
     this.start();
   }
 
