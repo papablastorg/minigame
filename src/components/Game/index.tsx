@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
-import { GameEngine } from '../engine';
+import { GameEngine } from '../../engine';
 import './Game.css';
 
 export const Game: React.FC = () => {
@@ -145,7 +145,11 @@ export const Game: React.FC = () => {
             <div className="overlay">
               <img src="images/player_start_img.png" alt="Player" className="start-player" />
               <h1>PapaJump</h1>
-              <button onClick={startGame} className="play-button">PLAY 3/3</button>
+              <button onClick={startGame} className="play-button">
+              PLAY 
+              <span>3/3</span>
+              <img src="images/ticket.png" alt="Player" className="ticket" />
+              </button>
             </div>
         )}
          {gameState === 'gameover' && (
@@ -154,7 +158,11 @@ export const Game: React.FC = () => {
               <img src="images/player_start_img.png" alt="Player" className="start-player" />
               <h1>Game Over</h1>
               <p className="game-over-score">Score: {score}</p>
-              <button onClick={restartGame} className="play-button">PLAY 2/3</button>
+              <button onClick={restartGame} className="play-button">
+                PLAY 
+                <span>2/3</span>
+                <img src="images/ticket.png" alt="Player" className="ticket" />
+                </button>
             </div>
         )}
         
