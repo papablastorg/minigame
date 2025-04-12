@@ -20,8 +20,6 @@ export class Star extends BaseObject {
     draw(ctx: CanvasRenderingContext2D) {
         if (!ctx) return;
         
-        console.log('Drawing star at:', this.x, this.y);
-        
         ctx.save();
         ctx.fillStyle = '#FFD700';
         ctx.strokeStyle = '#FFA500';
