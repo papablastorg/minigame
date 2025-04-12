@@ -3,7 +3,7 @@ import playerImageJumped from '/images/player_jumped.png';
 import playerImageFall from '/images/player_jump.png';
 
 import { BaseObject } from '../interfaces.ts';
-import { Platform } from './Platform.ts';
+import { Spring } from './Spring.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class Player extends BaseObject {
@@ -27,7 +27,6 @@ export class Player extends BaseObject {
     public broken: number;
     public canvasHeight: number;
     public canvasWidth: number;
-    public isOnSpring: boolean = false;
     private readonly maxFallSpeed = 8;
 
     constructor(name: string, width: number, height: number) {
@@ -56,17 +55,11 @@ export class Player extends BaseObject {
 
         if (this.image.complete && this.imageJumped.complete && this.imageFall.complete) {
             ctx.save();
-            
-            // Select image based on player state
             let currentImage;
-            if (this.isOnSpring) {
-                currentImage = this.imageJumped;
-            } else if (this.vy > 0) {
-                currentImage = this.imageFall;
-            } else {
-                currentImage = this.image;
-            }
-            
+            if (this.vy < 0) currentImage = this.imageJumped;
+            else if (this.vy > 0) currentImage = this.imageFall;
+            else currentImage = this.image;
+
             let cropX = 130;
             let cropY = 13;
             const cropWidth = 245;
@@ -76,29 +69,21 @@ export class Player extends BaseObject {
             const drawHeight = this.height;
             const drawWidth = drawHeight * aspectRatio;
 
-            if (this.dir === "left") cropX = 130;
-            else if (this.dir === "right") cropY = 13;
-            else if (this.dir === "right_land") cropY = 13;
-            else if (this.dir === "left_land") cropY = 13;
+            if (this.dir === 'left') cropX = 130;
+            else if (this.dir === 'right') cropY = 13;
+            else if (this.dir === 'right_land') cropY = 13;
+            else if (this.dir === 'left_land') cropY = 13;
 
-            if (this.dir === "right" || this.dir === "right_land") {
-                ctx.scale(-1, 1);
-                ctx.drawImage(
-                    currentImage,
-                    cropX, cropY,
-                    cropWidth, cropHeight,
-                    -this.x - drawWidth, this.y,
-                    drawWidth, drawHeight
-                );
-            } else {
-                ctx.drawImage(
-                    currentImage,
-                    cropX, cropY,
-                    cropWidth, cropHeight,
-                    this.x, this.y,
-                    drawWidth, drawHeight
-                );
-            }
+            const isRightDir = this.dir === 'right' || this.dir === 'right_land';
+            if(isRightDir) ctx.scale(-1, 1);
+            ctx.drawImage(
+                currentImage,
+                cropX, cropY,
+                cropWidth, cropHeight,
+                isRightDir ? (-this.x - drawWidth) : this.x,
+                this.y,
+                drawWidth, drawHeight
+            );
             ctx.restore();
         } else {
             ctx.fillStyle = '#4CAF50';
@@ -112,10 +97,6 @@ export class Player extends BaseObject {
 
     jumpHigh() {
         this.vy = -16;
-    }
-
-    setSpringState(isOnSpring: boolean) {
-        this.isOnSpring = isOnSpring;
     }
 
     land() {
@@ -169,25 +150,6 @@ export class Player extends BaseObject {
             this.store.player.y += this.store.player.vy;
             this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
         } else {
-            // Move platforms and base only when player is moving up
-            if (this.store.player.vy < 0) {
-                const platformCount = 10;
-                this.store.platforms.forEach((p, i) => {
-                    p.y -= this.store.player.vy;
-                    if (p.y > this.canvasHeight) {
-                        const currentLevel = this.getCurrentLevel();
-                        this.store.platforms[i] = new Platform(
-                            p.y - this.canvasHeight - (this.canvasHeight / platformCount), 
-                            this.canvasWidth, 
-                            this.score, 
-                            currentLevel
-                        );
-                    }
-                });
-
-                this.store.base.y -= this.store.player.vy;
-            }
-            
             this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
             if (this.store.player.vy >= 0) {
                 this.store.player.y += this.store.player.vy;
@@ -208,23 +170,21 @@ export class Player extends BaseObject {
             const platformLeft = p.x;
             const platformRight = p.x + p.width;
 
-            // Check spring collision
-            if (this.store.player.vy > 0 && this.store.spring.state === 0 &&
-                (playerLeft + 15 < this.store.spring.x + this.store.spring.width) &&
-                (playerRight - 15 > this.store.spring.x) &&
-                (playerBottom > this.store.spring.y) &&
-                (playerBottom < this.store.spring.y + this.store.spring.height)) {
-                this.store.spring.state = 1;
-                this.store.player.setSpringState(true);
+            // Check for spring collisions first
+            const spring = p.attachedObjects.find(obj => obj instanceof Spring) as Spring | undefined;
+            if (spring &&
+                this.store.player.vy > 0 &&
+                spring.state === 0 &&
+                (playerLeft + 15 < spring.x + spring.width) &&
+                (playerRight - 15 > spring.x) &&
+                (playerBottom > spring.y) &&
+                (playerBottom < spring.y + spring.height)) {
+                spring.state = 1;
                 this.store.player.jumpHigh();
                 return;
             }
 
-            // Reset spring state when player starts falling
-            if (this.store.player.vy > 0) {
-                this.store.player.setSpringState(false);
-            }
-
+            // Platform collision check
             if (this.store.player.vy > 0 && p.state === 0 &&
                 playerBottom > platformTop &&
                 playerBottom < platformBottom &&

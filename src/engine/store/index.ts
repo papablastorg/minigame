@@ -6,12 +6,12 @@ import { PlatformBroken } from '../objects/PlatformBroken';
 
 export class Store {
   public platforms: Platform[] = [];
-  public player: Player;
-  public base: Base;
-  public platformBroken: PlatformBroken;
-  public spring: Spring;
-  public onScoreUpdate: (score: number) => void;
-  public onGameOver: () => void;
+  public player!: Player;
+  public base!: Base;
+  public platformBroken!: PlatformBroken;
+  public spring!: Spring;
+  public onScoreUpdate!: (score: number) => void;
+  public onGameOver!: () => void;
 }
 
 export default new Store();

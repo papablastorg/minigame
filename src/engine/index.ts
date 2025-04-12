@@ -1,10 +1,10 @@
 import { Player } from './objects/Player';
 import { Base } from './objects/Base';
 import { PlatformBroken } from './objects/PlatformBroken';
+import { Spring } from './objects/Spring';
 import { PlatformManager } from './managers';
 import { Manager, BaseObject, Engine } from './interfaces.ts';
 import StoreInstance, { Store } from './store/index.ts';
-import { Spring } from './objects/Spring.ts';
 
 export class GameEngine extends Engine {
   private canvas: HTMLCanvasElement;
@@ -28,7 +28,7 @@ export class GameEngine extends Engine {
     this.height = canvas.height;
     this.store.onGameOver = onGameOver;
     this.store.onScoreUpdate = onScoreUpdate;
-  }
+  } 
 
   public start() {
     this.clear();
@@ -39,7 +39,6 @@ export class GameEngine extends Engine {
     this.store.base = new Base('base', this.canvas.width, this.canvas.height);
     this.store.platformBroken = new PlatformBroken('platformBroken');
     this.store.spring = new Spring('spring');
-    this.register(this.store.spring);
     this.register(this.store.player);
     this.register(this.store.base);
     this.register(this.store.platformBroken);
