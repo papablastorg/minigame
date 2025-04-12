@@ -94,10 +94,14 @@ export class Platform {
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
+        
+        // Draw all attached objects
         this.updateAttachedObjectsPosition();
         this.attachedObjects.forEach(object => {
             if (object.constructor.name === 'Star') object.draw(ctx);
             else if (object.constructor.name === 'Spring' && (this.type === 1 || this.type === 2)) object.draw(ctx);
+            console.log('Drawing attached object:', object.constructor.name, {object});
+            object.draw(ctx);
         });
     }
 

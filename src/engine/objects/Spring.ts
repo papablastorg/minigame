@@ -42,6 +42,9 @@ export class Spring extends BaseObject {
                 x, y,
                 drawWidth, drawHeight
             );
+        } else {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
         }
     }
 
