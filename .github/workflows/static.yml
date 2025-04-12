@@ -43,13 +43,13 @@ jobs:
       # Step 3: Install the project dependencies using npm
       - name: Install dependencies
         run: npm install
-
-      # Step 4: Build the project (make sure the game builds in the 'dist' or 'docs' folder)
-      - name: Build the game
+      - name: Set environment variables
+        run: echo "VITE_BASE_URL=/minigame/" >> $GITHUB_ENV
+      - name: Build
         run: npm run build
-
-      # Step 5: Configure GitHub Pages for deployment
-      - name: Configure GitHub Pages
+        env:
+          VITE_BASE_URL: /minigame/
+      - name: Setup Pages
         uses: actions/configure-pages@v5
 
       # Step 6: Upload the build artifact (the game files) to GitHub Pages

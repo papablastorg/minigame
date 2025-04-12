@@ -1,8 +1,16 @@
 import { useEffect } from 'react';
 import WebApp from '@twa-dev/sdk';
+import { RouterProvider, createBrowserRouter } from "react-router";
+import { CONFIG } from './config';
+
+import './App.css';
+import { Game } from './components/Game';
+import { Leaderboard } from './components/Leaderboard';
+import { Referral } from './components/Referral';
+import { Layout } from './components/layout';
+import { AirDrop } from './components/AirDrop';
 
 function App() {
-
   useEffect(() => {
     // Initialize Telegram Mini App
     WebApp.ready();
@@ -10,14 +18,37 @@ function App() {
     console.log('WebApp.initData',WebApp.initData);
   }, []);
 
+  // Check if the app is running within Telegram
+  if (!WebApp.initData && CONFIG.ENV !== 'development') {
+    return (
+      <div className="App" style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh',
+        padding: '20px',
+        textAlign: 'center'
+      }}>
+        This application can only be opened in Telegram Desktop or Mobile App
+      </div>
+    );
+  }
+
+  const baseUrl = CONFIG.BASE_URL;
+
+  const router = createBrowserRouter([
+    { path: `${baseUrl}`, element: <Layout> <Game /> </Layout> },
+    { path: `${baseUrl}leaderboard`, element: <Layout> <Leaderboard /> </Layout> },
+    { path: `${baseUrl}referral`, element: <Layout> <Referral /> </Layout> },
+    { path: `${baseUrl}airdrop`, element: <Layout> <AirDrop /> </Layout> },
+    { path: "*", element: <Layout><div>Page not found</div></Layout> },
+  ]);
+  
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-400 to-blue-600">
-        <div className="flex flex-col items-center justify-center min-h-screen p-4">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-white mb-2">PAPABLAST Jump</h1>
-          </div>
-        </div>
-    </div>
+      <div className='App'>
+        <RouterProvider router={router} />
+      </div>
   );
 }
 

@@ -1,0 +1,149 @@
+import platformImage1 from '/images/static_platform.png';
+import platformImage2 from '/images/move_platform.png';
+import platformImage3 from '/images/broken_platform.png';
+import platformImage4 from '/images/flash_platform.png';
+
+import StoreInstance, { Store } from '../store/index.ts';
+import { BaseObject, ObjectSpacing, PlatformObjectSpacingConfig } from '../interfaces.ts';
+import { Spring } from './Spring.ts';
+
+export class Platform {
+    public x: number;
+    public y: number;
+    public width = 100;
+    public height = 25;
+    public flag = 0;
+    public state = 0;
+    public type: number;
+    public vx = 1;
+    public moved = 0;
+    public image: HTMLImageElement;
+    public types: number[];
+    public store: Store = StoreInstance;
+    public attachedObjects: BaseObject[] = [];
+    private objectSpacingConfig: PlatformObjectSpacingConfig = { default: { verticalSpacing: 0 } };
+
+    constructor(position: number, width: number, score: number, level: number, objects?: BaseObject[]) {
+        this.x = Math.random() * (width - this.width);
+        this.y = position;
+        this.image = new Image();
+
+        if (objects) this.attachedObjects = objects;
+        this.setObjectSpacing("Spring", { verticalSpacing: -8 });
+        this.setObjectSpacing("Star", { verticalSpacing: -5 });
+        if (level === 1) this.image.src = platformImage1;
+        else if (level === 2) this.image.src = platformImage2;
+        else this.image.src = platformImage3;
+
+        if (score >= 5000) this.types = [2, 3, 3, 3, 4, 4, 4, 4];
+        else if (score >= 2000 && score < 5000) this.types = [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
+        else if (score >= 1000 && score < 2000) this.types = [2, 2, 2, 3, 3, 3, 3, 3];
+        else if (score >= 500 && score < 1000) this.types = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
+        else if (score >= 100 && score < 500) this.types = [1, 1, 1, 1, 2, 2];
+        else this.types = [1];
+
+        this.type = this.types[Math.floor(Math.random() * this.types.length)];
+
+        if (this.type === 3 && this.store.player.broken < 1) this.store.player.broken++;
+        else if (this.type === 3 && this.store.player.broken >= 1) {
+            this.type = 1;
+            this.store.player.broken = 0;
+        }
+
+        if (this.type === 1) this.image.src = platformImage1;
+        else if (this.type === 2) this.image.src = platformImage2;
+        else if (this.type === 3) this.image.src = platformImage3;
+        else if (this.type === 4) this.image.src = platformImage4;
+        this.moved = 0;
+        this.vx = 1;
+    }
+
+    public attachObject(object: BaseObject) {
+        this.attachedObjects.push(object);
+        this.updateAttachedObjectsPosition();
+    }
+
+    public detachObject(object: BaseObject) {
+        const index = this.attachedObjects.indexOf(object);
+        if (index > -1) {
+            this.attachedObjects.splice(index, 1);
+        }
+    }
+
+    public setObjectSpacing(objectType: string, spacing: ObjectSpacing) {
+        this.objectSpacingConfig[objectType] = spacing;
+    }
+
+    draw(ctx: CanvasRenderingContext2D | null) {
+        if (!ctx) return;
+        if ((this.type === 3 && this.flag === 1) || (this.type === 4 && this.state === 1)) return;
+
+        if (this.image.complete) {
+            const cropY = 8;
+            const cropHeight = 110;
+            const cropX = 3;
+            const cropWidth = 295;
+            ctx.drawImage(
+                this.image,
+                cropX, cropY,
+                cropWidth, cropHeight,
+                this.x, this.y,
+                this.width, this.height
+            );
+        } else {
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+        this.updateAttachedObjectsPosition();
+        this.attachedObjects.forEach(object => {
+            if (object.constructor.name === 'Star') object.draw(ctx);
+            else if (object.constructor.name === 'Spring' && (this.type === 1 || this.type === 2)) object.draw(ctx);
+        });
+    }
+
+    private updateAttachedObjectsPosition() {
+        this.attachedObjects.forEach(object => {
+            if (this.isPositionable(object)) {
+                const objectType = object.constructor.name;
+                const spacing = this.objectSpacingConfig[objectType] || this.objectSpacingConfig.default;
+                object.x = this.x + (this.width / 2) - (object.width / 2);
+                object.y = this.y - object.height - spacing.verticalSpacing;
+                if (object instanceof Spring) object.state = 0;
+            }
+        });
+    }
+
+    private isPositionable(object: BaseObject): object is BaseObject & {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    } {
+        return (
+            'x' in object &&
+            'y' in object &&
+            'width' in object &&
+            'height' in object &&
+            typeof object.x === 'number' &&
+            typeof object.y === 'number' &&
+            typeof object.width === 'number' &&
+            typeof object.height === 'number'
+        );
+    }
+
+    update() {
+        if (this.type === 2) {
+            if (this.x < 0 || this.x + this.width > window.innerWidth) this.vx *= -1
+            this.x += this.vx;
+        }
+
+        this.attachedObjects.forEach((obj, index) => {
+            if (this.y > window.innerHeight) {
+                if (obj instanceof Spring) obj.cleanup();
+                this.attachedObjects.splice(index, 1);
+            }
+        });
+
+        this.updateAttachedObjectsPosition();
+    }
+}
