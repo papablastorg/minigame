@@ -47,18 +47,14 @@ export class PlatformManager extends Manager {
         starChance = 0.5;
         springChance = 0.03;
     }
-    
-    console.log('Random value:', random, 'Star chance:', starChance, 'Spring chance:', springChance);
-    
+  
     if (random < springChance) {
         const spring = new Spring('spring');
         objects.push(spring);
-        console.log('Created spring');
     }
     else if (random < starChance) {
         const star = new Star('star');
         objects.push(star);
-        console.log('Created star');
     }
 
     return objects;
