@@ -15,7 +15,7 @@ body, html, #root {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f0f0;
+    /* background-color: #f0f0f0; */
 }
 
 .game-container {
@@ -30,14 +30,14 @@ body, html, #root {
 
 canvas {
     border: 2px solid black;
-    background: white;
+    /* background: white; */
 }
 
 .overlay {
     position: absolute;
     width: 422px;
     height: 552px;
-    background: rgba(255, 255, 255, 0.95);
+    /* background: rgba(255, 255, 255, 0.95); */
     border: 2px solid black;
     display: flex;
     flex-direction: column;
