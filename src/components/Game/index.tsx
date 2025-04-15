@@ -1,14 +1,59 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
+import { useMutation } from '@tanstack/react-query';
+import { WebAppUser } from '@twa-dev/types';
+
 import { GameEngine } from '../../engine';
+import { useGameActions } from './useGameActions.ts';
+import { useProfile } from '../../hooks/useProfile.ts';
+import { profileService } from '../../services';
+import { ProfileContext } from '../../context';
 import './Game.css';
 
-export const Game: React.FC = () => {
+export interface GameProps {
+  telegram: WebAppUser,
+}
+
+const mock = {
+  telegramId: 'qweewq123321',
+  firstname: 'Bob',
+}
+
+export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
+  const { setProfile } = useContext(ProfileContext);
+  const { data: profile, isLoading, isPending } = useProfile();
+  const { mutate: makeProfile } = useMutation({
+    mutationFn: profileService.make,
+  });
+
+  const authVerify = useCallback(async () => {
+    if (!profile && !isLoading && !isPending) {
+      const p = await makeProfile(telegram);
+      setProfile(p);
+    }
+  }, [isLoading, isPending, makeProfile, profile, setProfile, telegram])
+
+  useEffect(() => void authVerify(), [authVerify] );
+
+  const { start, end } = useGameActions();
+
+  const handleGameOver = useCallback(() => {
+    if (gameState === 'gameover') return;
+    setGameState('gameover')
+    end({ score });
+  }, [end, gameState, score])
+
+  const handleScoreUpdate = useCallback((newScore: number) => {
+    setScore(newScore);
+    if (newScore >= 5000) setBackgroundLevel(3);
+    else if (newScore >= 2500) setBackgroundLevel(2);
+    else setBackgroundLevel(1);
+  }, [])
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -17,25 +62,10 @@ export const Game: React.FC = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    const gameEngine = new GameEngine(
-        canvas,
-        ctx,
-        (newScore) => {
-          setScore(newScore);
-          if (newScore >= 5000) {
-            setBackgroundLevel(3);
-          } else if (newScore >= 2500) {
-            setBackgroundLevel(2);
-          } else {
-            setBackgroundLevel(1);
-          }
-        },
-        () => setGameState('gameover')
-    );
+    const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleGameOver);
 
     gameEngineRef.current = gameEngine;
 
-    // Touch event handlers
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault();
       const touch = e.touches[0];
@@ -92,13 +122,14 @@ export const Game: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [handleGameOver, handleScoreUpdate]);
 
   const startGame = () => {
     setGameState('playing');
     setScore(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.start();
+    start()
   };
 
   const restartGame = () => {
@@ -114,7 +145,7 @@ export const Game: React.FC = () => {
       gameEngineRef.current.store.player.isMovingRight = false;
     }
   };
-  
+
   const handleRightButtonDown = () => {
     if (gameEngineRef.current) {
       gameEngineRef.current.store.player.isMovingLeft = false;
@@ -129,6 +160,34 @@ export const Game: React.FC = () => {
     }
   };
 
+  const getActionInfo = useCallback(() => {
+    const toInfo = (title: string, info: string, handler: () => void) => {
+      return { title, info, handler }
+    }
+    switch (true) {
+      case !profile: return toInfo('', 'Please wait authentication...', () => null);
+      case gameState === 'start' : return toInfo('PapaJump', 'PLAY', startGame);
+      case gameState === 'gameover' : return toInfo('Game Over', 'PLAY', restartGame);
+      default: return undefined;
+    }
+  }, [gameState, profile, startGame])
+
+  const action = useMemo(() => {
+    const info = getActionInfo();
+    if (!info) return null;
+    return (
+      <div className="overlay">
+        <img src="images/player_start_img.png" alt="Player" className="start-player" />
+        <h1>{ info.title }</h1>
+        <button onClick={info.handler} className="play-button">
+          { info.info }
+          <span>3/3</span>
+          <img src="images/ticket.png" alt="Player" className="ticket" />
+        </button>
+      </div>
+    )
+  }, [getActionInfo])
+
   return (
       <div className={classNames('game-container', {
         'level-1': gameState === 'playing' && backgroundLevel === 1,
@@ -141,31 +200,7 @@ export const Game: React.FC = () => {
             width={422}
             height={552}
         />
-        {gameState === 'start' && (
-            <div className="overlay">
-              <img src="images/player_start_img.png" alt="Player" className="start-player" />
-              <h1>PapaJump</h1>
-              <button onClick={startGame} className="play-button">
-              PLAY 
-              <span>3/3</span>
-              <img src="images/ticket.png" alt="Player" className="ticket" />
-              </button>
-            </div>
-        )}
-         {gameState === 'gameover' && (
-            <div className="overlay">
-              {/* TODO: maybe need change image */}
-              <img src="images/player_start_img.png" alt="Player" className="start-player" />
-              <h1>Game Over</h1>
-              <p className="game-over-score">Score: {score}</p>
-              <button onClick={restartGame} className="play-button">
-                PLAY 
-                <span>2/3</span>
-                <img src="images/ticket.png" alt="Player" className="ticket" />
-                </button>
-            </div>
-        )}
-        
+        {action}
         {gameState === 'playing' && (
           <>
            <div className="score-board">Score: {score}</div>

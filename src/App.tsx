@@ -1,18 +1,20 @@
-import { useEffect } from 'react';
+import {useEffect, useState} from 'react';
 import WebApp from '@twa-dev/sdk';
-import { RouterProvider, createBrowserRouter } from "react-router";
-import { CONFIG } from './config';
+import { RouterProvider, createBrowserRouter } from 'react-router';
 
+import { CONFIG } from './config';
 import './App.css';
 import { Game } from './components/Game';
 import { Leaderboard } from './components/Leaderboard';
 import { Referral } from './components/Referral';
 import { Layout } from './components/layout';
 import { AirDrop } from './components/AirDrop';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ProfileContextProvider } from './context';
 
 function App() {
+  const [queryClient] = useState(() => new QueryClient());
   useEffect(() => {
-    // Initialize Telegram Mini App
     WebApp.ready();
     console.log('WebApp',WebApp);
     console.log('WebApp.initData',WebApp.initData);
@@ -21,10 +23,10 @@ function App() {
   // Check if the app is running within Telegram
   if (!WebApp.initData && CONFIG.ENV !== 'development') {
     return (
-      <div className="App" style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
+      <div className="App" style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
         height: '100vh',
         padding: '20px',
         textAlign: 'center'
@@ -37,17 +39,21 @@ function App() {
   const baseUrl = CONFIG.BASE_URL;
 
   const router = createBrowserRouter([
-    { path: `${baseUrl}`, element: <Layout> <Game /> </Layout> },
+    { path: `${baseUrl}`, element: <Layout> <Game telegram={WebApp} /> </Layout> },
     { path: `${baseUrl}leaderboard`, element: <Layout> <Leaderboard /> </Layout> },
     { path: `${baseUrl}referral`, element: <Layout> <Referral /> </Layout> },
     { path: `${baseUrl}airdrop`, element: <Layout> <AirDrop /> </Layout> },
     { path: "*", element: <Layout><div>Page not found</div></Layout> },
   ]);
-  
+
 
   return (
       <div className='App'>
-        <RouterProvider router={router} />
+        <QueryClientProvider client={queryClient}>
+          <ProfileContextProvider>
+            <RouterProvider router={router} />
+          </ProfileContextProvider>
+        </QueryClientProvider>
       </div>
   );
 }
