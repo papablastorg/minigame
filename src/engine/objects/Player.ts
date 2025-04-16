@@ -105,9 +105,10 @@ export class Player extends BaseObject {
     }
 
     public update() {
-        if (this.store.player.dir === "left") {
+        // Update direction based on movement
+        if (this.store.player.isMovingLeft) {
             this.store.player.dir = "left";
-        } else if (this.store.player.dir === "right") {
+        } else if (this.store.player.isMovingRight) {
             this.store.player.dir = "right";
         }
 

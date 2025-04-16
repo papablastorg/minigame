@@ -2,6 +2,7 @@ import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } 
 import classNames from 'classnames';
 import { useMutation } from '@tanstack/react-query';
 import { WebAppUser } from '@twa-dev/types';
+import pointImage from '/images/PAPApoint.png';
 
 import { GameEngine } from '../../engine';
 import { useGameActions } from './useGameActions.ts';
@@ -181,8 +182,9 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
         <h1>{ info.title }</h1>
         {gameState === 'gameover' && 
         <p className={styles.gameOverScore}>
-          Score: {score} 
-          <span className={styles.starsCount}>Points: {stars} ⭐ </span>
+          <span className={styles.starStats}>
+            $PAPA: {stars}  <img src={pointImage} alt="point" /> 
+            </span>
           </p>
         }
         <button onClick={info.handler} className={styles.playButton}>
@@ -192,7 +194,7 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
         </button>
       </div>
     )
-  }, [gameState, getActionInfo, score, stars])
+  }, [gameState, getActionInfo, stars])
 
   return (
         <div className={classNames(styles.gameContainer, {
@@ -211,8 +213,10 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
         {gameState === 'playing' && (
           <>
            <div className={styles.scoreBoard}>
-              <span>Score: {score}</span>
-              <span className={styles.starsCount}>⭐ {stars}</span>
+              <span className={styles.starsCount}>
+                <img src={pointImage} alt="point" />
+                {stars}
+                </span>
             </div>
             <div className={styles.controls}>
               <div

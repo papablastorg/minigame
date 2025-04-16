@@ -74,7 +74,7 @@ export class PlatformManager extends Manager {
       );
 
       platform.setObjectSpacing("spring", { verticalSpacing: -8 });
-      platform.setObjectSpacing("star", { verticalSpacing: -5 });
+      platform.setObjectSpacing("star", { verticalSpacing: 0 });
       this.platforms.push(platform);
       this.position += (this.height / this.platformCount);
     }

@@ -34,7 +34,7 @@ export class Platform {
 
         if (objects) this.attachedObjects = objects;
         this.setObjectSpacing("spring", { verticalSpacing: -8 });
-        this.setObjectSpacing("star", { verticalSpacing: -5 });
+        this.setObjectSpacing("star", { verticalSpacing: 0 });
         if (level === 1) this.image.src = platformImage1;
         else if (level === 2) this.image.src = platformImage2;
         else this.image.src = platformImage3;
