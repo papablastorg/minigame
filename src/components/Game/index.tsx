@@ -8,18 +8,19 @@ import { useGameActions } from './useGameActions.ts';
 import { useProfile } from '../../hooks/useProfile.ts';
 import { profileService } from '../../services';
 import { ProfileContext } from '../../context';
-import './Game.css';
+
+import styles from './Game.module.css';
 
 export interface GameProps {
-  telegram?: WebAppUser,
+  telegram: WebAppUser,
 }
 
 const mock = {
-  id: 'qweewq123321',
-  first_name: 'Bob',
+  telegramId: 'qweewq123321',
+  firstname: 'Bob',
 }
 
-export const Game: React.FC = ({ telegram }: GameProps) => {
+export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
@@ -31,6 +32,28 @@ export const Game: React.FC = ({ telegram }: GameProps) => {
   const { mutateAsync: makeProfile } = useMutation({
     mutationFn: profileService.make,
   });
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (gameEngineRef.current) {
+      if (e.key === 'ArrowLeft') {
+        gameEngineRef.current.store.player.isMovingLeft = true;
+        gameEngineRef.current.store.player.isMovingRight = false;
+      } else if (e.key === 'ArrowRight') {
+        gameEngineRef.current.store.player.isMovingLeft = false;
+        gameEngineRef.current.store.player.isMovingRight = true;
+      }
+    }
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (gameEngineRef.current) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        gameEngineRef.current.store.player.isMovingLeft = false;
+        gameEngineRef.current.store.player.isMovingRight = false;
+      }
+    }
+  };
+  console.log(gameState,'gameState');
 
   const authVerify = useCallback(async () => {
     if (!incomeProfile && !isLoading && !isPending) {
@@ -57,7 +80,7 @@ export const Game: React.FC = ({ telegram }: GameProps) => {
     else if (newScore >= 2500) setBackgroundLevel(2);
     else setBackgroundLevel(1);
   }, [])
-
+  
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -65,67 +88,31 @@ export const Game: React.FC = ({ telegram }: GameProps) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    const resizeCanvas = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 75;
+      }
+    };
+
+   
     const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleGameOver);
 
     gameEngineRef.current = gameEngine;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
+    resizeCanvas();
 
-      if (x < rect.width / 2) {
-        gameEngine.store.player.isMovingLeft = true;
-        gameEngine.store.player.isMovingRight = false;
-      } else {
-        gameEngine.store.player.isMovingLeft = false;
-        gameEngine.store.player.isMovingRight = true;
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      e.preventDefault();
-      gameEngine.store.player.isMovingLeft = false;
-      gameEngine.store.player.isMovingRight = false;
-    };
-
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchend', handleTouchEnd);
-    canvas.addEventListener('touchcancel', handleTouchEnd);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameEngineRef.current) {
-        if (e.key === 'ArrowLeft') {
-          gameEngineRef.current.store.player.isMovingLeft = true;
-          gameEngineRef.current.store.player.isMovingRight = false;
-        } else if (e.key === 'ArrowRight') {
-          gameEngineRef.current.store.player.isMovingLeft = false;
-          gameEngineRef.current.store.player.isMovingRight = true;
-        }
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (gameEngineRef.current) {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-          gameEngineRef.current.store.player.isMovingLeft = false;
-          gameEngineRef.current.store.player.isMovingRight = false;
-        }
-      }
-    };
-
+    window.addEventListener('resize', resizeCanvas);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      canvas.removeEventListener('touchstart', handleTouchStart);
-      canvas.removeEventListener('touchend', handleTouchEnd);
-      canvas.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [handleGameOver, handleScoreUpdate]);
+  
 
   const startGame = () => {
     setGameState('playing');
@@ -192,24 +179,25 @@ export const Game: React.FC = ({ telegram }: GameProps) => {
   }, [getActionInfo])
 
   return (
-      <div className={classNames('game-container', {
-        'level-1': gameState === 'playing' && backgroundLevel === 1,
-        'level-2': gameState === 'playing' && backgroundLevel === 2,
-        'level-3': gameState === 'playing' && backgroundLevel === 3,
-        'start-screen': gameState === 'start' || gameState === 'gameover'
+        <div className={classNames(styles.gameContainer, {
+        [styles.levelOne]: gameState === 'playing' && backgroundLevel === 1,
+        [styles.levelTwo]: gameState === 'playing' && backgroundLevel === 2,
+        [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
+        [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
         <canvas
             ref={canvasRef}
-            width={422}
-            height={552}
+            width={window.innerWidth}
+            height={window.innerHeight}
         />
-        {action}
+          {action}
+        
         {gameState === 'playing' && (
           <>
-           <div className="score-board">Score: {score}</div>
-            <div className="controls">
+           <div className={styles.scoreBoard}>Score: {score}</div>
+            <div className={styles.controls}>
               <div
-                  className="control-button left"
+                  className={classNames(styles.controlButton, styles.left)}
                   onMouseDown={handleLeftButtonDown}
                   onMouseUp={handleButtonUp}
                   onTouchStart={handleLeftButtonDown}
@@ -220,7 +208,7 @@ export const Game: React.FC = ({ telegram }: GameProps) => {
                 </svg>
               </div>
               <div
-                  className="control-button right"
+                  className={classNames(styles.controlButton, styles.right)}
                   onMouseDown={handleRightButtonDown}
                   onMouseUp={handleButtonUp}
                   onTouchStart={handleRightButtonDown}

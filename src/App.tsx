@@ -1,14 +1,14 @@
-import {useEffect, useState} from 'react';
+import { useEffect, useState } from 'react';
 import WebApp from '@twa-dev/sdk';
 import { RouterProvider, createBrowserRouter } from 'react-router';
-
 import { CONFIG } from './config';
-import './App.css';
+
 import { Game } from './components/Game';
 import { Leaderboard } from './components/Leaderboard';
-import { Referral } from './components/Referral';
+import { Referrals } from './components/Referrals';
 import { Layout } from './components/layout';
 import { AirDrop } from './components/AirDrop';
+import styles from './App.module.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProfileContextProvider } from './context';
 
@@ -23,10 +23,10 @@ function App() {
   // Check if the app is running within Telegram
   if (!WebApp.initData && CONFIG.ENV !== 'development') {
     return (
-      <div className="App" style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
+      <div className={styles.App} style={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
         height: '100vh',
         padding: '20px',
         textAlign: 'center'
@@ -43,7 +43,7 @@ function App() {
   const router = createBrowserRouter([
     { path: `${baseUrl}`, element: <Layout> <Game telegram={telegram} /> </Layout> },
     { path: `${baseUrl}leaderboard`, element: <Layout> <Leaderboard /> </Layout> },
-    { path: `${baseUrl}referral`, element: <Layout> <Referral /> </Layout> },
+    { path: `${baseUrl}referral`, element: <Layout> <Referrals /> </Layout> },
     { path: `${baseUrl}airdrop`, element: <Layout> <AirDrop /> </Layout> },
     { path: "*", element: <Layout><div>Page not found</div></Layout> },
   ]);

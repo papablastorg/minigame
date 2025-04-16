@@ -98,6 +98,7 @@ export class Platform {
         // Draw all attached objects
         this.updateAttachedObjectsPosition();
         this.attachedObjects.forEach(object => {
+            console.log('object',{name: object.name, object})
             if (object.name === 'Star') object.draw(ctx);
             else if (object.name === 'Spring' && (this.type === 1 || this.type === 2)) object.draw(ctx);
         });
@@ -107,6 +108,7 @@ export class Platform {
         this.attachedObjects.forEach(object => {
             if (this.isPositionable(object)) {
                 const objectType = object.name;
+                console.log('objectType',objectType);
                 const spacing = this.objectSpacingConfig[objectType] || this.objectSpacingConfig.default;
                 object.x = this.x + (this.width / 2) - (object.width / 2);
                 object.y = this.y - object.height - spacing.verticalSpacing;

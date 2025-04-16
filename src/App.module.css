@@ -3,19 +3,12 @@ body, html, #root {
     padding: 0;
     height: 100%;
     background: #ddd;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     font-family: sans-serif;
 }
 
 .App {
     text-align: center;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    /* background-color: #f0f0f0; */
 }
 
 .game-container {
@@ -23,22 +16,17 @@ body, html, #root {
     justify-content: center;
     align-items: center;
     background-color: white;
-    padding: 20px;
-    border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 canvas {
     border: 2px solid black;
-    /* background: white; */
 }
 
 .overlay {
     position: absolute;
     width: 422px;
     height: 552px;
-    /* background: rgba(255, 255, 255, 0.95); */
-    border: 2px solid black;
     display: flex;
     flex-direction: column;
     justify-content: center;
