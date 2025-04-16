@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { GameEngine } from '../../engine';
-import './Game.css';
+import styles from './Game.module.css';
 
 export const Game: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -10,12 +10,41 @@ export const Game: React.FC = () => {
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
 
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (gameEngineRef.current) {
+      if (e.key === 'ArrowLeft') {
+        gameEngineRef.current.store.player.isMovingLeft = true;
+        gameEngineRef.current.store.player.isMovingRight = false;
+      } else if (e.key === 'ArrowRight') {
+        gameEngineRef.current.store.player.isMovingLeft = false;
+        gameEngineRef.current.store.player.isMovingRight = true;
+      }
+    }
+  };
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (gameEngineRef.current) {
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        gameEngineRef.current.store.player.isMovingLeft = false;
+        gameEngineRef.current.store.player.isMovingRight = false;
+      }
+    }
+  };
+  console.log(gameState,'gameState');
+  
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
+
+    const resizeCanvas = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight - 75;
+      }
+    };
 
     const gameEngine = new GameEngine(
         canvas,
@@ -35,64 +64,19 @@ export const Game: React.FC = () => {
 
     gameEngineRef.current = gameEngine;
 
-    // Touch event handlers
-    const handleTouchStart = (e: TouchEvent) => {
-      e.preventDefault();
-      const touch = e.touches[0];
-      const rect = canvas.getBoundingClientRect();
-      const x = touch.clientX - rect.left;
+    resizeCanvas();
 
-      if (x < rect.width / 2) {
-        gameEngine.store.player.isMovingLeft = true;
-        gameEngine.store.player.isMovingRight = false;
-      } else {
-        gameEngine.store.player.isMovingLeft = false;
-        gameEngine.store.player.isMovingRight = true;
-      }
-    };
-
-    const handleTouchEnd = (e: TouchEvent) => {
-      e.preventDefault();
-      gameEngine.store.player.isMovingLeft = false;
-      gameEngine.store.player.isMovingRight = false;
-    };
-
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchend', handleTouchEnd);
-    canvas.addEventListener('touchcancel', handleTouchEnd);
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameEngineRef.current) {
-        if (e.key === 'ArrowLeft') {
-          gameEngineRef.current.store.player.isMovingLeft = true;
-          gameEngineRef.current.store.player.isMovingRight = false;
-        } else if (e.key === 'ArrowRight') {
-          gameEngineRef.current.store.player.isMovingLeft = false;
-          gameEngineRef.current.store.player.isMovingRight = true;
-        }
-      }
-    };
-
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (gameEngineRef.current) {
-        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
-          gameEngineRef.current.store.player.isMovingLeft = false;
-          gameEngineRef.current.store.player.isMovingRight = false;
-        }
-      }
-    };
-
+    window.addEventListener('resize', resizeCanvas);
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      canvas.removeEventListener('touchstart', handleTouchStart);
-      canvas.removeEventListener('touchend', handleTouchEnd);
-      canvas.removeEventListener('touchcancel', handleTouchEnd);
+      window.removeEventListener('resize', resizeCanvas);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, []);
+  
 
   const startGame = () => {
     setGameState('playing');
@@ -130,48 +114,47 @@ export const Game: React.FC = () => {
   };
 
   return (
-      <div className={classNames('game-container', {
-        'level-1': gameState === 'playing' && backgroundLevel === 1,
-        'level-2': gameState === 'playing' && backgroundLevel === 2,
-        'level-3': gameState === 'playing' && backgroundLevel === 3,
-        'start-screen': gameState === 'start' || gameState === 'gameover'
+        <div className={classNames(styles.gameContainer, {
+        [styles.levelOne]: gameState === 'playing' && backgroundLevel === 1,
+        [styles.levelTwo]: gameState === 'playing' && backgroundLevel === 2,
+        [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
+        [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
         <canvas
             ref={canvasRef}
-            width={422}
-            height={552}
+            width={window.innerWidth}
+            height={window.innerHeight}
         />
         {gameState === 'start' && (
-            <div className="overlay">
-              <img src="images/player_start_img.png" alt="Player" className="start-player" />
+            <div className={styles.overlay}>
+              <img src="images/player_start_img.png" alt="Player" className={styles.startPlayer} />
               <h1>PapaJump</h1>
-              <button onClick={startGame} className="play-button">
+              <button onClick={startGame} className={styles.playButton}>
               PLAY 
               <span>3/3</span>
-              <img src="images/ticket.png" alt="Player" className="ticket" />
+              <img src="images/ticket.png" alt="Player" className={styles.ticket} />
               </button>
             </div>
         )}
          {gameState === 'gameover' && (
-            <div className="overlay">
-              {/* TODO: maybe need change image */}
-              <img src="images/player_start_img.png" alt="Player" className="start-player" />
+            <div className={styles.overlay}>
+              <img src="images/game_over.png" alt="Player" className={styles.startPlayer} />
               <h1>Game Over</h1>
-              <p className="game-over-score">Score: {score}</p>
-              <button onClick={restartGame} className="play-button">
+              <p className={styles.gameOverScore}>Score: {score}</p>
+              <button onClick={restartGame} className={styles.playButton}>
                 PLAY 
                 <span>2/3</span>
-                <img src="images/ticket.png" alt="Player" className="ticket" />
+                <img src="images/ticket.png" alt="Player" className={styles.ticket} />
                 </button>
             </div>
         )}
         
         {gameState === 'playing' && (
           <>
-           <div className="score-board">Score: {score}</div>
-            <div className="controls">
+           <div className={styles.scoreBoard}>Score: {score}</div>
+            <div className={styles.controls}>
               <div
-                  className="control-button left"
+                  className={classNames(styles.controlButton, styles.left)}
                   onMouseDown={handleLeftButtonDown}
                   onMouseUp={handleButtonUp}
                   onTouchStart={handleLeftButtonDown}
@@ -182,7 +165,7 @@ export const Game: React.FC = () => {
                 </svg>
               </div>
               <div
-                  className="control-button right"
+                  className={classNames(styles.controlButton, styles.right)}
                   onMouseDown={handleRightButtonDown}
                   onMouseUp={handleButtonUp}
                   onTouchStart={handleRightButtonDown}
