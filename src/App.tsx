@@ -17,6 +17,7 @@ function App() {
   useEffect(() => {
     WebApp.ready();
     console.log('WebApp.initData',WebApp.initData);
+    console.log('WebApp.initDataUnsafe',WebApp.initDataUnsafe);
   }, []);
 
   // Check if the app is running within Telegram
@@ -38,6 +39,8 @@ function App() {
   const baseUrl = CONFIG.BASE_URL;
 
   const telegram = WebApp?.initDataUnsafe.user || undefined;
+
+  console.log('telegram',telegram);
 
   const router = createBrowserRouter([
     { path: `${baseUrl}`, element: <Layout> <Game telegram={telegram} /> </Layout> },

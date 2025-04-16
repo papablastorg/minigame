@@ -16,8 +16,9 @@ export interface GameProps {
 }
 
 const mock = {
-  telegramId: 'qweewq123321',
-  firstname: 'Bob',
+  telegramId: '11112222',
+  firstname: 'Tilda',
+  referral: '',
 }
 
 export const Game: React.FC = ({ telegram }: GameProps = mock) => {
@@ -54,11 +55,14 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
       }
     }
   };
-  // console.log(gameState,'gameState');
 
   const authVerify = useCallback(async () => {
     if (!incomeProfile && !isLoading && !isPending) {
-      const payload = { telegramId: telegram?.id || mock.id, firstname: telegram?.first_name || mock.first_name }
+      const payload = { 
+        telegramId: telegram?.id || mock.telegramId,
+         firstname: telegram?.first_name || mock.firstname,
+         referral: mock.referral,
+        }
       const p = await makeProfile(payload);
       return setProfile(p);
     }
