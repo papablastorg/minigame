@@ -10,27 +10,31 @@ import { Spring } from './Spring.ts';
 export class Platform {
     public x: number;
     public y: number;
-    public width = 100;
-    public height = 25;
+    public width: number;
+    public height: number;
     public flag = 0;
     public state = 0;
     public type: number;
-    public vx = 1;
+    public vx = 1;    
     public moved = 0;
     public image: HTMLImageElement;
-    public types: number[];
+    public types: number[] = [];
     public store: Store = StoreInstance;
     public attachedObjects: BaseObject[] = [];
     private objectSpacingConfig: PlatformObjectSpacingConfig = { default: { verticalSpacing: 0 } };
 
-    constructor(position: number, width: number, score: number, level: number, objects?: BaseObject[]) {
-        this.x = Math.random() * (width - this.width);
+    constructor(position: number, canvasWidth: number, score: number, level: number, objects?: BaseObject[]) {
+        // Устанавливаем размеры платформы как процент от размеров канваса
+        this.width = Math.min(Math.max(canvasWidth * 0.2, 60), 120); // 20% от ширины канваса, мин 60px, макс 120px
+        this.height = Math.min(Math.max(window.innerHeight * 0.03, 15), 30); // 3% от высоты канваса, мин 15px, макс 30px
+        
+        this.x = Math.random() * (canvasWidth - this.width);
         this.y = position;
         this.image = new Image();
 
         if (objects) this.attachedObjects = objects;
-        this.setObjectSpacing("Spring", { verticalSpacing: -8 });
-        this.setObjectSpacing("Star", { verticalSpacing: -5 });
+        this.setObjectSpacing("spring", { verticalSpacing: -8 });
+        this.setObjectSpacing("star", { verticalSpacing: -5 });
         if (level === 1) this.image.src = platformImage1;
         else if (level === 2) this.image.src = platformImage2;
         else this.image.src = platformImage3;
@@ -95,7 +99,6 @@ export class Platform {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
         
-        // Draw all attached objects
         this.updateAttachedObjectsPosition();
         this.attachedObjects.forEach(object => {
             if (object.name === 'star') object.draw(ctx);

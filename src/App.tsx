@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import WebApp from '@twa-dev/sdk';
+import { WebAppUser } from '@twa-dev/types';
 import { RouterProvider, createBrowserRouter } from 'react-router';
 import { CONFIG } from './config';
-
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ProfileContextProvider } from './context';
 import { Game } from './components/Game';
 import { Leaderboard } from './components/Leaderboard';
 import { Referrals } from './components/Referrals';
 import { Layout } from './components/layout';
 import { AirDrop } from './components/AirDrop';
 import styles from './App.module.css';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ProfileContextProvider } from './context';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -38,9 +38,7 @@ function App() {
 
   const baseUrl = CONFIG.BASE_URL;
 
-  const telegram = WebApp?.initDataUnsafe.user || undefined;
-
-  console.log('telegram',telegram);
+  const telegram = WebApp.initDataUnsafe.user as WebAppUser;
 
   const router = createBrowserRouter([
     { path: `${baseUrl}`, element: <Layout> <Game telegram={telegram} /> </Layout> },

@@ -46,6 +46,7 @@ canvas {
     justify-content: center;
     padding: 10px;
     align-items: center;
+    gap: 20px;
     background: rgba(182, 200, 220, 0.7);
     position: absolute;
     top: -3px;
@@ -59,6 +60,17 @@ canvas {
     line-height: 47px;
     margin: 0px 0 0 5px;
     font-family: 'Gloria Hallelujah', cursive;
+}
+
+.starsCount {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #FFD700;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-weight: bold;
+    font-size: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .overlay {
@@ -185,7 +197,9 @@ canvas {
 .gameOverScore {
     font-size: 28px;
     color: #FFD700;
-    text-align: center;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
     margin-top: 0;
     margin-bottom: 1em;
     font-weight: bold;

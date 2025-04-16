@@ -21,10 +21,11 @@ const mock = {
   referral: '',
 }
 
-export const Game: React.FC = ({ telegram }: GameProps = mock) => {
+export const Game: React.FC<GameProps> = ({ telegram }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
+  const [stars, setStars] = useState(0);
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
   const { setProfile, profile } = useContext(ProfileContext);
@@ -73,9 +74,9 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
 
   const handleGameOver = useCallback(() => {
     if (gameState === 'gameover') return;
-    setGameState('gameover')
-    end({ score });
-  }, [end, gameState, score])
+    setGameState('gameover');
+    end({ score, stars });
+  }, [end, gameState, score, stars])
 
   const handleScoreUpdate = useCallback((newScore: number) => {
     setScore(newScore);
@@ -83,6 +84,10 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
     else if (newScore >= 2500) setBackgroundLevel(2);
     else setBackgroundLevel(1);
   }, [])
+
+  const handleStarsUpdate = useCallback((newStars: number) => {
+    setStars(newStars);
+  }, []);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -99,7 +104,7 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
     };
 
    
-    const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleGameOver);
+    const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleStarsUpdate, handleGameOver);
 
     gameEngineRef.current = gameEngine;
 
@@ -114,12 +119,13 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [handleGameOver, handleScoreUpdate]);
+  }, [handleGameOver, handleScoreUpdate, handleStarsUpdate]);
   
 
   const startGame = useCallback(() => {
     setGameState('playing');
     setScore(0);
+    setStars(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.start();
     start()
@@ -128,6 +134,7 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   const restartGame = () => {
     setGameState('playing');
     setScore(0);
+    setStars(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.restart();
   };
@@ -154,13 +161,13 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   };
 
   const getActionInfo = useCallback(() => {
-    const toInfo = (title: string, info: string, handler: () => void) => {
-      return { title, info, handler }
+    const toInfo = (title: string, img: string, text: string, handler: () => void) => {
+      return { title, img , text, handler }
     }
     switch (true) {
-      case !profile: return toInfo('Auth', 'Please wait authentication...', () => null);
-      case gameState === 'start' : return toInfo('PapaJump', 'PLAY', startGame);
-      case gameState === 'gameover' : return toInfo('Game Over', 'PLAY', restartGame);
+      case !profile: return toInfo('Auth', '', 'Please wait authentication...', () => null);
+      case gameState === 'start' : return toInfo('PapaJump', 'images/player_start_img.png', 'PLAY', startGame);
+      case gameState === 'gameover' : return toInfo('Game Over', 'images/game_over.png', 'PLAY', restartGame);
       default: return undefined;
     }
   }, [gameState, profile, startGame])
@@ -170,16 +177,22 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
     if (!info) return null;
     return (
       <div className={styles.overlay}>
-        <img src="images/player_start_img.png" alt="Player" className={styles.startPlayer} />
+        <img src={info?.img} alt="Player" className={styles.startPlayer} />
         <h1>{ info.title }</h1>
+        {gameState === 'gameover' && 
+        <p className={styles.gameOverScore}>
+          Score: {score} 
+          <span className={styles.starsCount}>Points: {stars} ⭐ </span>
+          </p>
+        }
         <button onClick={info.handler} className={styles.playButton}>
-          { info.info }
+          { info.text }
           <span>3/3</span>
           <img src="images/ticket.png" alt="Player" className={styles.ticket} />
         </button>
       </div>
     )
-  }, [getActionInfo])
+  }, [gameState, getActionInfo, score, stars])
 
   return (
         <div className={classNames(styles.gameContainer, {
@@ -197,7 +210,10 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
         
         {gameState === 'playing' && (
           <>
-           <div className={styles.scoreBoard}>Score: {score}</div>
+           <div className={styles.scoreBoard}>
+              <span>Score: {score}</span>
+              <span className={styles.starsCount}>⭐ {stars}</span>
+            </div>
             <div className={styles.controls}>
               <div
                   className={classNames(styles.controlButton, styles.left)}

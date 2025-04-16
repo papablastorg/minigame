@@ -41,10 +41,10 @@ export class PlatformManager extends Manager {
     let starChance = 0.3;
     let springChance = 0.05;
     if (currentLevel === 2) {
-        starChance = 0.4;
+        starChance = 0.5;
         springChance = 0.04;
     } else if (currentLevel === 3) {
-        starChance = 0.5;
+        starChance = 0.6;
         springChance = 0.03;
     }
   
@@ -73,8 +73,8 @@ export class PlatformManager extends Manager {
         this.getObjectsForPlatform()
       );
 
-      platform.setObjectSpacing("Spring", { verticalSpacing: -8 });
-      platform.setObjectSpacing("Star", { verticalSpacing: -5 });
+      platform.setObjectSpacing("spring", { verticalSpacing: -8 });
+      platform.setObjectSpacing("star", { verticalSpacing: -5 });
       this.platforms.push(platform);
       this.position += (this.height / this.platformCount);
     }

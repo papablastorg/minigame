@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-
 import { gameService } from '../../services';
+import { GameEndPayload } from '../../types/game';
 
 export function useGameActions() {
   const { mutate: start } = useMutation({
@@ -10,7 +10,7 @@ export function useGameActions() {
   });
 
   const { mutate: end } = useMutation({
-    mutationFn: (payload) => gameService.end(payload),
+    mutationFn: (payload: GameEndPayload) => gameService.end(payload),
     onError: (e: AxiosError) => console.error(e),
   });
 
