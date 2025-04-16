@@ -38,8 +38,10 @@ function App() {
 
   const baseUrl = CONFIG.BASE_URL;
 
+  const telegram = WebApp?.initDataUnsafe.user || undefined;
+
   const router = createBrowserRouter([
-    { path: `${baseUrl}`, element: <Layout> <Game telegram={WebApp} /> </Layout> },
+    { path: `${baseUrl}`, element: <Layout> <Game telegram={telegram} /> </Layout> },
     { path: `${baseUrl}leaderboard`, element: <Layout> <Leaderboard /> </Layout> },
     { path: `${baseUrl}referral`, element: <Layout> <Referral /> </Layout> },
     { path: `${baseUrl}airdrop`, element: <Layout> <AirDrop /> </Layout> },

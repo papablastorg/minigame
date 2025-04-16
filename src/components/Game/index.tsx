@@ -11,32 +11,35 @@ import { ProfileContext } from '../../context';
 import './Game.css';
 
 export interface GameProps {
-  telegram: WebAppUser,
+  telegram?: WebAppUser,
 }
 
 const mock = {
-  telegramId: 'qweewq123321',
-  firstname: 'Bob',
+  id: 'qweewq123321',
+  first_name: 'Bob',
 }
 
-export const Game: React.FC = ({ telegram }: GameProps = mock) => {
+export const Game: React.FC = ({ telegram }: GameProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
-  const { setProfile } = useContext(ProfileContext);
-  const { data: profile, isLoading, isPending } = useProfile();
-  const { mutate: makeProfile } = useMutation({
+  const { setProfile, profile } = useContext(ProfileContext);
+  const { data: incomeProfile, isLoading, isPending } = useProfile();
+
+  const { mutateAsync: makeProfile } = useMutation({
     mutationFn: profileService.make,
   });
 
   const authVerify = useCallback(async () => {
-    if (!profile && !isLoading && !isPending) {
-      const p = await makeProfile(telegram);
-      setProfile(p);
+    if (!incomeProfile && !isLoading && !isPending) {
+      const payload = { telegramId: telegram?.id || mock.id, firstname: telegram?.first_name || mock.first_name }
+      const p = await makeProfile(payload);
+      return setProfile(p);
     }
-  }, [isLoading, isPending, makeProfile, profile, setProfile, telegram])
+    setProfile(incomeProfile);
+  }, [incomeProfile, isLoading, isPending, setProfile, makeProfile, telegram?.id, telegram?.first_name])
 
   useEffect(() => void authVerify(), [authVerify] );
 

@@ -1,13 +1,14 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, UseQueryResult } from '@tanstack/react-query';
 
-import { profileService } from '../services';
+import { profileService } from '../services/profileService';
 
-export function useProfile() {
-  return useQuery(({
-    queryKey: ['profile'],
-    queryFn: () => profileService.me().then((res) => res.data),
+export function useProfile(options = {}): UseQueryResult<any, Error> {
+  return useQuery<any, Error>({
+    queryKey: ['getProfile'],
+    queryFn: () => profileService.me(),
+    refetchInterval: false,
     refetchOnWindowFocus: false,
-    refetchOnMount: false,
-    refetchOnReconnect: false,
-  }) )
+    retry: false,
+    ...options,
+  });
 }
