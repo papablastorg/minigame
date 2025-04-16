@@ -28,6 +28,7 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   const gameEngineRef = useRef<GameEngine | null>(null);
   const { setProfile, profile } = useContext(ProfileContext);
   const { data: incomeProfile, isLoading, isPending } = useProfile();
+  const { start, end } = useGameActions();
 
   const { mutateAsync: makeProfile } = useMutation({
     mutationFn: profileService.make,
@@ -53,7 +54,7 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
       }
     }
   };
-  console.log(gameState,'gameState');
+  // console.log(gameState,'gameState');
 
   const authVerify = useCallback(async () => {
     if (!incomeProfile && !isLoading && !isPending) {
@@ -65,8 +66,6 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   }, [incomeProfile, isLoading, isPending, setProfile, makeProfile, telegram?.id, telegram?.first_name])
 
   useEffect(() => void authVerify(), [authVerify] );
-
-  const { start, end } = useGameActions();
 
   const handleGameOver = useCallback(() => {
     if (gameState === 'gameover') return;
@@ -155,7 +154,7 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
       return { title, info, handler }
     }
     switch (true) {
-      case !profile: return toInfo('', 'Please wait authentication...', () => null);
+      case !profile: return toInfo('Auth', 'Please wait authentication...', () => null);
       case gameState === 'start' : return toInfo('PapaJump', 'PLAY', startGame);
       case gameState === 'gameover' : return toInfo('Game Over', 'PLAY', restartGame);
       default: return undefined;
@@ -166,13 +165,13 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
     const info = getActionInfo();
     if (!info) return null;
     return (
-      <div className="overlay">
-        <img src="images/player_start_img.png" alt="Player" className="start-player" />
+      <div className={styles.overlay}>
+        <img src="images/player_start_img.png" alt="Player" className={styles.startPlayer} />
         <h1>{ info.title }</h1>
-        <button onClick={info.handler} className="play-button">
+        <button onClick={info.handler} className={styles.playButton}>
           { info.info }
           <span>3/3</span>
-          <img src="images/ticket.png" alt="Player" className="ticket" />
+          <img src="images/ticket.png" alt="Player" className={styles.ticket} />
         </button>
       </div>
     )
@@ -190,7 +189,7 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
             width={window.innerWidth}
             height={window.innerHeight}
         />
-          {action}
+        {action}
         
         {gameState === 'playing' && (
           <>

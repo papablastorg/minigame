@@ -16,7 +16,6 @@ function App() {
   const [queryClient] = useState(() => new QueryClient());
   useEffect(() => {
     WebApp.ready();
-    console.log('WebApp',WebApp);
     console.log('WebApp.initData',WebApp.initData);
   }, []);
 
