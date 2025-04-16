@@ -13,9 +13,14 @@
     color: #fff;
     opacity: 0.5;
     text-decoration: none;
+    padding: 8px 10px;
 }
 
 .nav a:hover {
+    opacity: 1;
+}
+
+.active {
     opacity: 1;
 }
 
