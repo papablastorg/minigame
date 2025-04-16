@@ -4,6 +4,7 @@ import playerImageFall from '/images/player_jump.png';
 
 import { BaseObject } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
+import { Star } from './Star.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class Player extends BaseObject {
@@ -104,9 +105,10 @@ export class Player extends BaseObject {
     }
 
     public update() {
-        if (this.store.player.dir === "left") {
+        // Update direction based on movement
+        if (this.store.player.isMovingLeft) {
             this.store.player.dir = "left";
-        } else if (this.store.player.dir === "right") {
+        } else if (this.store.player.isMovingRight) {
             this.store.player.dir = "right";
         }
 
@@ -170,7 +172,20 @@ export class Player extends BaseObject {
             const platformLeft = p.x;
             const platformRight = p.x + p.width;
 
-            // Check for spring collisions first
+            // Check for star collisions
+            const star = p.attachedObjects.find(obj => obj instanceof Star) as Star | undefined;
+            if (star && 
+                star.state === 0 &&
+                playerLeft < star.x + star.width &&
+                playerRight > star.x &&
+                playerBottom > star.y &&
+                this.store.player.y < star.y + star.height) {
+                star.state = 1;
+                this.store.starsCollected++;
+                this.store.onStarsUpdate(this.store.starsCollected);
+            }
+
+            // Check for spring collisions
             const spring = p.attachedObjects.find(obj => obj instanceof Spring) as Spring | undefined;
             if (spring &&
                 this.store.player.vy > 0 &&

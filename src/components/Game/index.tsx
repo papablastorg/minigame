@@ -1,14 +1,41 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
+import { useMutation } from '@tanstack/react-query';
+import { WebAppUser } from '@twa-dev/types';
+import pointImage from '/images/PAPApoint.png';
+
 import { GameEngine } from '../../engine';
+import { useGameActions } from './useGameActions.ts';
+import { useProfile } from '../../hooks/useProfile.ts';
+import { profileService } from '../../services';
+import { ProfileContext } from '../../context';
+
 import styles from './Game.module.css';
 
-export const Game: React.FC = () => {
+export interface GameProps {
+  telegram: WebAppUser,
+}
+
+const mock = {
+  telegramId: '11112222',
+  firstname: 'Tilda',
+  referral: '',
+}
+
+export const Game: React.FC<GameProps> = ({ telegram }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
+  const [stars, setStars] = useState(0);
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
+  const { setProfile, profile } = useContext(ProfileContext);
+  const { data: incomeProfile, isLoading, isPending } = useProfile();
+  const { start, end } = useGameActions();
+
+  const { mutateAsync: makeProfile } = useMutation({
+    mutationFn: profileService.make,
+  });
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (gameEngineRef.current) {
@@ -30,7 +57,38 @@ export const Game: React.FC = () => {
       }
     }
   };
-  console.log(gameState,'gameState');
+
+  const authVerify = useCallback(async () => {
+    if (!incomeProfile && !isLoading && !isPending) {
+      const payload = { 
+        telegramId: telegram?.id || mock.telegramId,
+         firstname: telegram?.first_name || mock.firstname,
+         referral: mock.referral,
+        }
+      const p = await makeProfile(payload);
+      return setProfile(p);
+    }
+    setProfile(incomeProfile);
+  }, [incomeProfile, isLoading, isPending, setProfile, makeProfile, telegram?.id, telegram?.first_name])
+
+  useEffect(() => void authVerify(), [authVerify] );
+
+  const handleGameOver = useCallback(() => {
+    if (gameState === 'gameover') return;
+    setGameState('gameover');
+    end({ score, stars });
+  }, [end, gameState, score, stars])
+
+  const handleScoreUpdate = useCallback((newScore: number) => {
+    setScore(newScore);
+    if (newScore >= 5000) setBackgroundLevel(3);
+    else if (newScore >= 2500) setBackgroundLevel(2);
+    else setBackgroundLevel(1);
+  }, [])
+
+  const handleStarsUpdate = useCallback((newStars: number) => {
+    setStars(newStars);
+  }, []);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -46,21 +104,8 @@ export const Game: React.FC = () => {
       }
     };
 
-    const gameEngine = new GameEngine(
-        canvas,
-        ctx,
-        (newScore) => {
-          setScore(newScore);
-          if (newScore >= 5000) {
-            setBackgroundLevel(3);
-          } else if (newScore >= 2500) {
-            setBackgroundLevel(2);
-          } else {
-            setBackgroundLevel(1);
-          }
-        },
-        () => setGameState('gameover')
-    );
+   
+    const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleStarsUpdate, handleGameOver);
 
     gameEngineRef.current = gameEngine;
 
@@ -75,19 +120,22 @@ export const Game: React.FC = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
-  }, []);
+  }, [handleGameOver, handleScoreUpdate, handleStarsUpdate]);
   
 
-  const startGame = () => {
+  const startGame = useCallback(() => {
     setGameState('playing');
     setScore(0);
+    setStars(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.start();
-  };
+    start()
+  },[start]);
 
   const restartGame = () => {
     setGameState('playing');
     setScore(0);
+    setStars(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.restart();
   };
@@ -98,7 +146,7 @@ export const Game: React.FC = () => {
       gameEngineRef.current.store.player.isMovingRight = false;
     }
   };
-  
+
   const handleRightButtonDown = () => {
     if (gameEngineRef.current) {
       gameEngineRef.current.store.player.isMovingLeft = false;
@@ -113,6 +161,41 @@ export const Game: React.FC = () => {
     }
   };
 
+  const getActionInfo = useCallback(() => {
+    const toInfo = (title: string, img: string, text: string, handler: () => void) => {
+      return { title, img , text, handler }
+    }
+    switch (true) {
+      case !profile: return toInfo('Auth', '', 'Please wait authentication...', () => null);
+      case gameState === 'start' : return toInfo('PapaJump', 'images/player_start_img.png', 'PLAY', startGame);
+      case gameState === 'gameover' : return toInfo('Game Over', 'images/game_over.png', 'PLAY', restartGame);
+      default: return undefined;
+    }
+  }, [gameState, profile, startGame])
+
+  const action = useMemo(() => {
+    const info = getActionInfo();
+    if (!info) return null;
+    return (
+      <div className={styles.overlay}>
+        <img src={info?.img} alt="Player" className={styles.startPlayer} />
+        <h1>{ info.title }</h1>
+        {gameState === 'gameover' && 
+        <p className={styles.gameOverScore}>
+          <span className={styles.starStats}>
+            $PAPA: {stars}  <img src={pointImage} alt="point" /> 
+            </span>
+          </p>
+        }
+        <button onClick={info.handler} className={styles.playButton}>
+          { info.text }
+          <span>3/3</span>
+          <img src="images/ticket.png" alt="Player" className={styles.ticket} />
+        </button>
+      </div>
+    )
+  }, [gameState, getActionInfo, stars])
+
   return (
         <div className={classNames(styles.gameContainer, {
         [styles.levelOne]: gameState === 'playing' && backgroundLevel === 1,
@@ -125,33 +208,16 @@ export const Game: React.FC = () => {
             width={window.innerWidth}
             height={window.innerHeight}
         />
-        {gameState === 'start' && (
-            <div className={styles.overlay}>
-              <img src="images/player_start_img.png" alt="Player" className={styles.startPlayer} />
-              <h1>PapaJump</h1>
-              <button onClick={startGame} className={styles.playButton}>
-              PLAY 
-              <span>3/3</span>
-              <img src="images/ticket.png" alt="Player" className={styles.ticket} />
-              </button>
-            </div>
-        )}
-         {gameState === 'gameover' && (
-            <div className={styles.overlay}>
-              <img src="images/game_over.png" alt="Player" className={styles.startPlayer} />
-              <h1>Game Over</h1>
-              <p className={styles.gameOverScore}>Score: {score}</p>
-              <button onClick={restartGame} className={styles.playButton}>
-                PLAY 
-                <span>2/3</span>
-                <img src="images/ticket.png" alt="Player" className={styles.ticket} />
-                </button>
-            </div>
-        )}
+        {action}
         
         {gameState === 'playing' && (
           <>
-           <div className={styles.scoreBoard}>Score: {score}</div>
+           <div className={styles.scoreBoard}>
+              <span className={styles.starsCount}>
+                <img src={pointImage} alt="point" />
+                {stars}
+                </span>
+            </div>
             <div className={styles.controls}>
               <div
                   className={classNames(styles.controlButton, styles.left)}
