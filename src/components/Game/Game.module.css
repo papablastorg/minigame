@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 
-.game-container {
+.gameContainer {
     position: relative;
     width: 100%;
     height: 100%;
@@ -15,19 +15,19 @@
     transition: background-image .5s ease-out;
 }
 
-.game-container.level-1 {
+.gameContainer.levelOne {
     background-image: url('/images/L1.jpg');
 }
 
-.game-container.level-2 {
+.gameContainer.levelTwo {
     background-image: url('/images/L2.jpg');
 }
 
-.game-container.level-3 {
+.gameContainer.levelThree {
     background-image: url('/images/L3.jpg');
 }
 
-.game-container.start-screen {
+.gameContainer.startScreen {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
@@ -39,7 +39,7 @@ canvas {
     background: transparent;
 }
 
-.score-board {
+.scoreBoard {
     width: auto;
     height: 50px;
     display: flex;
@@ -53,7 +53,7 @@ canvas {
     z-index: 2;
 }
 
-.score-board p {
+.scoreBoard p {
     font-size: 20px;
     padding: 0;
     line-height: 47px;
@@ -102,7 +102,7 @@ canvas {
     z-index: 10;
 }
 
-.control-button {
+.controlButton {
     width: 80px;
     height: 80px;
     border: 3px solid black;
@@ -116,42 +116,43 @@ canvas {
     cursor: pointer;
     user-select: none;
     touch-action: manipulation;
+    outline: none !important;
     box-shadow: 
         inset 0 0 0 3px rgba(0, 0, 0, 0.2),
         0 4px 8px rgba(0, 0, 0, 0.3);
     padding: 0;
 }
 
-.control-button svg {
+.controlButton svg {
     width: 80px;
     height: 80px;
 }
 
-.control-button.left {
+.controlButton.left {
     margin-left: 8px;
 }
 
-.control-button.right {
+.controlButton.right {
     transform: rotate(180deg);
     margin-right: 8px;
 }
 
-.control-button:hover {
+.controlButton:hover {
     background-color: #211e93;
 }
 
-.control-button:active {
+.controlButton:active {
     background-color: #211e93;
 }
 
-.start-player {
+.startPlayer {
     width: 260px;
     height: 260px;
     object-fit: contain;
     display: block;
 }
 
-.play-button {
+.playButton {
     background-color: #7ED957;
     border: none;
     border-radius: 12px;
@@ -167,21 +168,21 @@ canvas {
     justify-content: center;
 }
 
-.play-button span {
+.playButton span {
     margin-left: 10px;
 }
 
-.play-button:hover {
+.playButton:hover {
     background-color: #4B8B33;
     
 }
 
-.play-button:active {
+.playButton:active {
     background-color: #4B8B33;
     transform: scale(0.95);
 }
 
-.game-over-score {
+.gameOverScore {
     font-size: 28px;
     color: #FFD700;
     text-align: center;

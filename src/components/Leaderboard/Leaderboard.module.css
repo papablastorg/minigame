@@ -1,0 +1,75 @@
+.leaderboardContainer {
+  padding: 20px;
+  color: #fff;
+}
+
+.header {
+    color: #FFD700;
+    font-family: 'Gloria Hallelujah', cursive;
+    font-size: 50px;
+}
+
+.rank {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.rankNumber {
+    margin-right: 20px;
+    margin-left: 10px;
+}
+
+.rankScore {
+    margin-right: 5px;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+
+
+.playerList {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.playerItem {
+    display: grid;
+    grid-template-columns: 1fr 5fr 1fr;
+    align-items: center;
+    border: 3px solid black;
+    border-radius: 10px;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.playerScore {
+    font-size: 20px;
+    text-align: right;
+    font-weight: bold;
+    color: #FFD700;
+}
+
+.playerName {
+    font-size: 20px;
+    text-align: left;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+.playerRank {
+    font-size: 20px;
+    text-align: left;
+    color: #FFD700;
+    font-weight: bold;
+    margin-right: 10px;
+}
