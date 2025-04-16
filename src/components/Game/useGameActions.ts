@@ -5,7 +5,7 @@ import { gameService } from '../../services';
 
 export function useGameActions() {
   const { mutate: start } = useMutation({
-    mutationFn: (payload) => gameService.start(payload),
+    mutationFn: () => gameService.start(),
     onError: (e: AxiosError) => console.error(e),
   });
 

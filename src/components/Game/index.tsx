@@ -114,13 +114,13 @@ export const Game: React.FC = ({ telegram }: GameProps = mock) => {
   }, [handleGameOver, handleScoreUpdate]);
   
 
-  const startGame = () => {
+  const startGame = useCallback(() => {
     setGameState('playing');
     setScore(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.start();
     start()
-  };
+  },[start]);
 
   const restartGame = () => {
     setGameState('playing');
