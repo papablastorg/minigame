@@ -15,13 +15,6 @@
     transition: background-image .5s ease-out;
 }
 
-.language {
-    position: absolute;
-    right: 15px;
-    top: 15px;
-    z-index: 3;
-}
-
 .gameContainer.levelOne {
     background-image: url('/images/L1.jpg');
 }

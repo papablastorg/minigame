@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ProfileContext } from '../../context';
 import styles from './Referrals.module.css';
 
 const data = [
@@ -19,17 +20,18 @@ const referralCount: number = 10;
 
 export const Referrals = () => {
   const [copied, setCopied] = useState(false);
+    const { profile } = useContext(ProfileContext);
   const { t } = useTranslation();
 
   const copyLink = useCallback(() => {
     setCopied(true);
     if(!copied) {
-      navigator.clipboard.writeText('https://t.me/referral_bot?start=123');
+      navigator.clipboard.writeText(`https://t.me/papablast_bot?referral=${profile?.referral?.code || ''}`); 
       setTimeout(() => {
         setCopied(false);
       }, 4000);
     }
-  }, [copied]);
+  }, [copied, profile]);
 
   return (
     <div className={styles.referralsContainer}>
