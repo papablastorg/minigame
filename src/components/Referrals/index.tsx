@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-
+import { useTranslation } from 'react-i18next';
 import styles from './Referrals.module.css';
 
 const data = [
@@ -19,6 +19,7 @@ const referralCount: number = 10;
 
 export const Referrals = () => {
   const [copied, setCopied] = useState(false);
+  const { t } = useTranslation();
 
   const copyLink = useCallback(() => {
     setCopied(true);
@@ -32,28 +33,36 @@ export const Referrals = () => {
 
   return (
     <div className={styles.referralsContainer}>
-    <div className={styles.header}>REFERRALS</div>
-    <img width={250} height={250} src='images/referrals.png' alt="referral" className={styles.referralImage} />
-    <button onClick={copyLink} className={styles.referralButton}>{copied ? 'Copied!' : 'Copy link'}</button>
-    <p className={styles.referralText}>Earn 100% from each referral's earnings</p>
-    {referralCount === 0 ? <p className={styles.referralCount}>
-      You <span>don't have</span> any referrals
-    </p> : <p className={styles.referralCount}>
-      You have
-      <span>{referralCount}</span> 
-      {referralCount > 1 ? 'referrals' : 'referral'}
-    </p>}
-    {referralCount > 0 && <div className={styles.playerList}>
-      {data.map((player, index) => {
-        return (
-          <div className={styles.playerItem} key={index}>
-            <span className={styles.playerRank}>{index + 1}.</span>
-            <span className={styles.playerName}>{player.name}</span>
-            <span className={styles.playerScore}>{player.score}</span>
-          </div>
-        )
-      })}
-    </div>}
-  </div>
+      <div className={styles.header}>{t('referrals.title')}</div>
+      <img width={250} height={250} src='images/referrals.png' alt="referral" className={styles.referralImage} />
+      <button onClick={copyLink} className={styles.referralButton}>
+        {copied ? t('referrals.copied') : t('referrals.copyLink')}
+      </button>
+      <p className={styles.referralText}>{t('referrals.earnText')}</p>
+      {referralCount === 0 ? (
+        <p className={styles.referralCount}>
+          {t('referrals.noReferrals')}
+        </p>
+      ) : (
+        <p className={styles.referralCount}>
+          {t('referrals.haveReferrals')}&nbsp;
+          <span>{referralCount}</span>&nbsp;
+          {t(referralCount > 1 ? 'referrals.referrals' : 'referrals.referral')}
+        </p>
+      )}
+      {referralCount > 0 && (
+        <div className={styles.playerList}>
+          {data.map((player, index) => {
+            return (
+              <div className={styles.playerItem} key={index}>
+                <span className={styles.playerRank}>{index + 1}.</span>
+                <span className={styles.playerName}>{player.name}</span>
+                <span className={styles.playerScore}>{player.score}</span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
   );
 };

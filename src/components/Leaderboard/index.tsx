@@ -1,4 +1,5 @@
 import styles from './Leaderboard.module.css';
+import { useTranslation } from 'react-i18next';
 
 const data = [
   { name: 'Player 1', score: 10054 },
@@ -24,25 +25,27 @@ const data = [
 ];
 
 export const Leaderboard = () => {
+  const { t } = useTranslation();
+
   return (
-      <div className={styles.leaderboardContainer}>
-        <div className={styles.header}>LEADERBOARD</div>
-        <div className={styles.rank}>
-          Your rank:
-          <div className={styles.rankNumber}>#142</div>
-          <div className={styles.rankScore}>1250 points</div>
-        </div>
-        <div className={styles.playerList}>
-          {data.map((player, index) => {
-            return (
-              <div className={styles.playerItem} key={index}>
-                <span className={styles.playerRank}>{index + 1}.</span>
-                <span className={styles.playerName}>{player.name}</span>
-                <span className={styles.playerScore}>{player.score}</span>
-              </div>
-            )
-          })}
-        </div>
+    <div className={styles.leaderboardContainer}>
+      <div className={styles.header}>{t('leaderboard.title')}</div>
+      <div className={styles.rank}>
+        {t('leaderboard.yourRank')}
+        <div className={styles.rankNumber}>#142</div>
+        <div className={styles.rankScore}>1250 {t('leaderboard.points')}</div>
       </div>
+      <div className={styles.playerList}>
+        {data.map((player, index) => {
+          return (
+            <div className={styles.playerItem} key={index}>
+              <span className={styles.playerRank}>{index + 1}.</span>
+              <span className={styles.playerName}>{player.name}</span>
+              <span className={styles.playerScore}>{player.score}</span>
+            </div>
+          )
+        })}
+      </div>
+    </div>
   );
 };

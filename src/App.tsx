@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import WebApp from '@twa-dev/sdk';
 import { WebAppUser } from '@twa-dev/types';
 import { RouterProvider, createBrowserRouter } from 'react-router';
@@ -14,6 +15,8 @@ import styles from './App.module.css';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
+  const { t } = useTranslation();
+  
   useEffect(() => {
     WebApp.ready();
     console.log('WebApp.initData',WebApp.initData);
@@ -31,13 +34,12 @@ function App() {
         padding: '20px',
         textAlign: 'center'
       }}>
-        This application can only be opened in Telegram Desktop or Mobile App
+        {t('errors.telegramOnly')}
       </div>
     );
   }
 
   const baseUrl = CONFIG.BASE_URL;
-
   const telegram = WebApp.initDataUnsafe.user as WebAppUser;
 
   const router = createBrowserRouter([
@@ -48,15 +50,14 @@ function App() {
     { path: "*", element: <Layout><div>Page not found</div></Layout> },
   ]);
 
-
   return (
-      <div className='App'>
-        <QueryClientProvider client={queryClient}>
-          <ProfileContextProvider>
-            <RouterProvider router={router} />
-          </ProfileContextProvider>
-        </QueryClientProvider>
-      </div>
+    <div className='App'>
+      <QueryClientProvider client={queryClient}>
+        <ProfileContextProvider>
+          <RouterProvider router={router} />
+        </ProfileContextProvider>
+      </QueryClientProvider>
+    </div>
   );
 }
 

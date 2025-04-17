@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "game": "Гра",
+    "referral": "Реферали",
+    "leaderboard": "Рейтинг",
+    "airdrop": "Airdrop"
+  },
+  "game": {
+    "gameOver": "Гра закінчена",
+    "play": "ГРАТИ",
+    "points": "очок"
+  },
+  "leaderboard": {
+    "title": "ТАБЛИЦЯ ЛІДЕРІВ",
+    "yourRank": "Ваш ранг:",
+    "points": "очок"
+  },
+  "referrals": {
+    "title": "РЕФЕРАЛИ",
+    "copyLink": "Копіювати посилання",
+    "copied": "Скопійовано!",
+    "earnText": "Отримуйте 100% від заробітку кожного реферала",
+    "noReferrals": "У вас немає рефералів",
+    "haveReferrals": "У вас",
+    "referral": "реферал",
+    "referrals": "рефералів"
+  },
+  "airdrop": {
+    "title": "AIRDROP",
+    "comingSoon": "Незабаром...",
+    "joinChannel": "Приєднатися до каналу"
+  },
+  "errors": {
+    "telegramOnly": "Цей додаток можна відкрити тільки в Telegram Desktop або мобільному додатку"
+  }
+}
