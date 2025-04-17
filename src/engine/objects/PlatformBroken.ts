@@ -5,15 +5,17 @@ import  { BaseObject } from '../interfaces';
 export class PlatformBroken extends BaseObject {
     public x: number;
     public y: number;
-    public width = 100;
-    public height = 15;
+    public width: number;
+    public height: number;
     public appearance = false;
     public image: HTMLImageElement;
 
     constructor(name: string) {
-        super(name)
+        super(name);
         this.x = 0;
         this.y = 0;
+        this.width = Math.min(Math.max(window.innerWidth * 0.2, 60), 120);
+        this.height = Math.min(Math.max(window.innerHeight * 0.03, 15), 30);
         this.image = new Image();
         this.image.src = platform_broken;
     }

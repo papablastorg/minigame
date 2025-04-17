@@ -10,7 +10,9 @@ export class Store {
   public base!: Base;
   public platformBroken!: PlatformBroken;
   public spring!: Spring;
+  public starsCollected: number = 0;
   public onScoreUpdate!: (score: number) => void;
+  public onStarsUpdate!: (stars: number) => void;
   public onGameOver!: () => void;
 }
 

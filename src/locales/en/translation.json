@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "game": "Game",
+    "referral": "Referral",
+    "leaderboard": "Leaderboard",
+    "airdrop": "AirDrop"
+  },
+  "game": {
+    "gameOver": "Game Over",
+    "play": "PLAY",
+    "points": "points"
+  },
+  "leaderboard": {
+    "title": "LEADERBOARD",
+    "yourRank": "Your rank:",
+    "points": "points"
+  },
+  "referrals": {
+    "title": "REFERRALS",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
+    "earnText": "Earn 100% from each referral's earnings",
+    "noReferrals": "You don't have any referrals",
+    "haveReferrals": "You have",
+    "referral": "referral",
+    "referrals": "referrals"
+  },
+  "airdrop": {
+    "title": "AIRDROP",
+    "comingSoon": "Coming soon...",
+    "joinChannel": "Join Channel"
+  },
+  "errors": {
+    "telegramOnly": "This application can only be opened in Telegram Desktop or Mobile App"
+  }
+}

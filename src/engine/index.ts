@@ -19,6 +19,7 @@ export class GameEngine extends Engine {
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
     onScoreUpdate: (score: number) => void,
+    onStarsUpdate: (stars: number) => void,
     onGameOver: () => void
   ) {
     super();
@@ -28,6 +29,7 @@ export class GameEngine extends Engine {
     this.height = canvas.height;
     this.store.onGameOver = onGameOver;
     this.store.onScoreUpdate = onScoreUpdate;
+    this.store.onStarsUpdate = onStarsUpdate;
   } 
 
   public start() {
