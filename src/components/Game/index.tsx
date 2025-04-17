@@ -101,11 +101,24 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
 
     const resizeCanvas = () => {
       if (canvas) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 75;
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = window.innerWidth;
+        const logicalHeight = window.innerHeight - 75;
+        
+        // Устанавливаем размеры в DOM (CSS размер)
+        canvas.style.width = `${logicalWidth}px`;
+        canvas.style.height = `${logicalHeight}px`;
+        
+        // Устанавливаем физические размеры канваса с учётом DPI
+        canvas.width = logicalWidth * dpr;
+        canvas.height = logicalHeight * dpr;
+        
+        // Сбрасываем масштабирование контекста
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // Масштабируем контекст, чтобы наша логическая система координат соответствовала размеру экрана
+        ctx.scale(dpr, dpr);
       }
     };
-
    
     const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleStarsUpdate, handleGameOver);
 
@@ -205,9 +218,6 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
         [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
         [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
-        {/* <div className={styles.language}>
-        <LanguageSwitcher />
-        </div> */}
         <canvas
             ref={canvasRef}
             width={window.innerWidth}
