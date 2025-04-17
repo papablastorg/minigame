@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "game": "Игра",
+    "referral": "Рефералы",
+    "leaderboard": "Рейтинг",
+    "airdrop": "Airdrop"
+  },
+  "game": {
+    "gameOver": "Игра окончена",
+    "play": "ИГРАТЬ",
+    "points": "очков"
+  },
+  "leaderboard": {
+    "title": "ТАБЛИЦА ЛИДЕРОВ",
+    "yourRank": "Ваш ранг:",
+    "points": "очков"
+  },
+  "referrals": {
+    "title": "РЕФЕРАЛЫ",
+    "copyLink": "Копировать ссылку",
+    "copied": "Скопировано!",
+    "earnText": "Получайте 100% от заработка каждого реферала",
+    "noReferrals": "У вас нет рефералов",
+    "haveReferrals": "У вас",
+    "referral": "реферал",
+    "referrals": "рефералов"
+  },
+  "airdrop": {
+    "title": "AIRDROP",
+    "comingSoon": "Скоро...",
+    "joinChannel": "Присоединиться к каналу"
+  },
+  "errors": {
+    "telegramOnly": "Это приложение можно открыть только в Telegram Desktop или мобильном приложении"
+  }
+}

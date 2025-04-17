@@ -9,6 +9,7 @@ import { useGameActions } from './useGameActions.ts';
 import { useProfile } from '../../hooks/useProfile.ts';
 import { profileService } from '../../services';
 import { ProfileContext } from '../../context';
+import { useTranslation } from 'react-i18next';
 
 import styles from './Game.module.css';
 
@@ -32,6 +33,7 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
   const { setProfile, profile } = useContext(ProfileContext);
   const { data: incomeProfile, isLoading, isPending } = useProfile();
   const { start, end } = useGameActions();
+  const { t } = useTranslation();
 
   const { mutateAsync: makeProfile } = useMutation({
     mutationFn: profileService.make,
@@ -167,11 +169,11 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
     }
     switch (true) {
       case !profile: return toInfo('Auth', '', 'Please wait authentication...', () => null);
-      case gameState === 'start' : return toInfo('PapaJump', 'images/player_start_img.png', 'PLAY', startGame);
-      case gameState === 'gameover' : return toInfo('Game Over', 'images/game_over.png', 'PLAY', restartGame);
+      case gameState === 'start' : return toInfo('PapaJump', 'images/player_start_img.png', t('game.play'), startGame);
+      case gameState === 'gameover' : return toInfo(t('game.gameOver'), 'images/game_over.png', t('game.play'), restartGame);
       default: return undefined;
     }
-  }, [gameState, profile, startGame])
+  }, [gameState, profile, startGame, t])
 
   const action = useMemo(() => {
     const info = getActionInfo();
@@ -203,6 +205,9 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
         [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
         [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
+        {/* <div className={styles.language}>
+        <LanguageSwitcher />
+        </div> */}
         <canvas
             ref={canvasRef}
             width={window.innerWidth}
@@ -215,7 +220,7 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
            <div className={styles.scoreBoard}>
               <span className={styles.starsCount}>
                 <img src={pointImage} alt="point" />
-                {stars}
+                {stars} {t('game.points')}
                 </span>
             </div>
             <div className={styles.controls}>
