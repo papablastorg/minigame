@@ -112,7 +112,7 @@ export class Platform {
                 const objectType = object.name;
                 const spacing = this.objectSpacingConfig[objectType] || this.objectSpacingConfig.default;
                 object.x = this.x + (this.width / 2) - (object.width / 2);
-                object.y = this.y - object.height - spacing.verticalSpacing;
+                object.y = this.y - object.height - spacing.verticalSpacing;             
                 if (object instanceof Spring) object.state = 0;
             }
         });
@@ -146,7 +146,7 @@ export class Platform {
             if (this.y > window.innerHeight) {
                 if (obj instanceof Spring) obj.cleanup();
                 this.attachedObjects.splice(index, 1);
-            }
+            } 
         });
 
         this.updateAttachedObjectsPosition();

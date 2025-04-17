@@ -11,6 +11,9 @@ export class Star extends BaseObject {
     public height = 30;
     public image: HTMLImageElement;
     private opacity = 1;
+    private floatSpeed: number = 3.5;
+    private floatAmplitude: number = 4;
+    private timeOffset: number = Math.random() * Math.PI * 2; // Случайная начальная фаза
 
     constructor(name: string) {
         super(name);
@@ -31,6 +34,11 @@ export class Star extends BaseObject {
         ctx.save();
         ctx.globalAlpha = this.opacity;
 
+        let yOffset = 0;
+        if (this.state === 0) {
+            yOffset = Math.sin((Date.now() / 1000 + this.timeOffset) * this.floatSpeed) * this.floatAmplitude;
+        }
+
         if (this.image.complete) {
             const cropY = 0;       
             const cropHeight = this.image.height;    
@@ -41,7 +49,7 @@ export class Star extends BaseObject {
             const drawWidth = cropWidth * scale;
             const drawHeight = cropHeight * scale;
             const x = this.x + (this.width - drawWidth) / 2;
-            const y = this.y + (this.height - drawHeight) / 2;
+            const y = this.y + (this.height - drawHeight) / 2 + yOffset;
 
             ctx.drawImage(
                 this.image,
