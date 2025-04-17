@@ -103,7 +103,7 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
       if (canvas) {
         const dpr = window.devicePixelRatio || 1;
         const logicalWidth = window.innerWidth;
-        const logicalHeight = window.innerHeight - 75;
+        const logicalHeight = window.innerHeight - 71;
         
         // Устанавливаем размеры в DOM (CSS размер)
         canvas.style.width = `${logicalWidth}px`;

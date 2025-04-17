@@ -88,8 +88,6 @@ export class Platform {
             const cropX = 3;
             const cropWidth = 295;
             
-            // Отключаем размытие для более четкого рендеринга
-            ctx.imageSmoothingEnabled = false;
             
             ctx.drawImage(
                 this.image,

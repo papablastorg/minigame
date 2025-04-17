@@ -25,9 +25,8 @@ export class GameEngine extends Engine {
     super();
     this.canvas = canvas;
     this.ctx = ctx;
-    // Используем логические размеры (с учетом CSS размеров), а не физические пиксели
     this.width = window.innerWidth;
-    this.height = window.innerHeight - 75;
+    this.height = window.innerHeight - 70;
     this.store.onGameOver = onGameOver;
     this.store.onScoreUpdate = onScoreUpdate;
     this.store.onStarsUpdate = onStarsUpdate;
@@ -37,7 +36,6 @@ export class GameEngine extends Engine {
     this.clear();
     super.start();
     console.log('start in engine')
-    // Используем логические размеры вместо физических размеров canvas
     this.store.player = new Player('player', this.width, this.height);
     this.store.platforms = [];
     this.store.base = new Base('base', this.width, this.height);
@@ -63,7 +61,6 @@ export class GameEngine extends Engine {
 
   public update() {
     super.update();
-    // Очищаем весь канвас (с учетом devicePixelRatio)
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.managers.forEach((m) => {m.update(); m.draw(this.ctx)});
     this.objects.forEach((o) => {o.update(); o.draw(this.ctx)});

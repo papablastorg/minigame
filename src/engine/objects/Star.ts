@@ -50,9 +50,6 @@ export class Star extends BaseObject {
             const drawHeight = cropHeight * scale;
             const x = this.x + (this.width - drawWidth) / 2;
             const y = this.y + (this.height - drawHeight) / 2 + yOffset;
-
-            // Отключаем сглаживание для острых краев и лучшего рендеринга пиксельной графики
-            ctx.imageSmoothingEnabled = false;
             
             ctx.drawImage(
                 this.image,

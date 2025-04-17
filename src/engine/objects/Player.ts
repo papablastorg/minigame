@@ -75,9 +75,6 @@ export class Player extends BaseObject {
             else if (this.dir === 'right_land') cropY = 13;
             else if (this.dir === 'left_land') cropY = 13;
 
-            // Отключаем сглаживание для более четкого рендеринга
-            ctx.imageSmoothingEnabled = false;
-
             const isRightDir = this.dir === 'right' || this.dir === 'right_land';
             if(isRightDir) ctx.scale(-1, 1);
             ctx.drawImage(
