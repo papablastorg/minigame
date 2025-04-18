@@ -11,6 +11,7 @@ import { Referrals } from './components/Referrals';
 import { Layout } from './components/layout';
 import { AirDrop } from './components/AirDrop';
 import { AuthWrapper } from './components/AuthWrapper';
+import { GlobalImagePreloader } from './common/ImagePreloader';
 import styles from './App.module.css';
 
 function App() {
@@ -72,9 +73,11 @@ function App() {
     <div className='App'>
       <QueryClientProvider client={queryClient}>
         <ProfileContextProvider>
-          <AuthWrapper>
-            <RouterProvider router={router} />
-          </AuthWrapper>
+          <GlobalImagePreloader>
+            <AuthWrapper>
+              <RouterProvider router={router} />
+            </AuthWrapper>
+          </GlobalImagePreloader>
         </ProfileContextProvider>
       </QueryClientProvider>
     </div>

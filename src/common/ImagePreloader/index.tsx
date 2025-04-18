@@ -3,6 +3,7 @@ import { ImgHTMLAttributes, useCallback, useEffect, useRef, useState } from 'rea
 
 import styles from './ImagePreloader.module.css';
 import { Loader } from '../Loader';
+import { ImagePreloadService } from '../../services';
 
 export interface ImagePreloaderProps extends ImgHTMLAttributes<HTMLImageElement> {
   width?: number | `${number}`;
@@ -15,7 +16,17 @@ export const ImagePreloader = ({
   }: ImagePreloaderProps) => {
   const attempts = useRef(0);
   const img = useRef(new Image());
-  const [loading, setLoading] = useState<boolean>(true);
+  
+  // Проверяем наличие изображения в кэше при первоначальной установке состояния
+  const [loading, setLoading] = useState<boolean>(() => {
+    if (!src) return true;
+    const cachedImage = ImagePreloadService.getImageFromCache(src);
+    if (cachedImage) {
+      img.current = cachedImage;
+      return false; // Если изображение в кэше, сразу устанавливаем loading: false
+    }
+    return true; // Иначе loading: true
+  });
 
   const handleLoad = useCallback(() => {
     setLoading(false);
@@ -30,6 +41,19 @@ export const ImagePreloader = ({
   }, []);
 
   useEffect(() => {
+    if (!src) return;
+
+    // Попытка получить изображение из кэша
+    const cachedImage = ImagePreloadService.getImageFromCache(src);
+    
+    if (cachedImage) {
+      // Если изображение уже в кэше, используем его
+      img.current = cachedImage;
+      setLoading(false);
+      return;
+    }
+    
+    // Если изображение не найдено в кэше, загружаем его обычным способом
     if (!img.current) img.current = new Image();
     const image = img.current;
     if (src && image.src !== src) {
@@ -50,3 +74,5 @@ export const ImagePreloader = ({
     ? <div className={styles.loading}><Loader /></div>
     : <img src={img.current.src} className={classNames(styles.image, className)} alt={alt} {...props} />;
 }
+
+export { default as GlobalImagePreloader } from './GlobalImagePreloader';

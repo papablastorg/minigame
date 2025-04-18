@@ -1,6 +1,7 @@
 import { BaseObject } from '../interfaces';
 import StoreInstance, { Store } from '../store';
 import springImage from '/images/jump_point.png';
+import { ImagePreloadService } from '../../services';
 
 export class Spring extends BaseObject {
     public x: number;
@@ -16,8 +17,18 @@ export class Spring extends BaseObject {
         super(name);
         this.x = 0;
         this.y = 0;
-        this.image = new Image();
-        this.image.src = springImage;
+
+        // Попытка получить изображение из кэша
+        const cachedImage = ImagePreloadService.getImageFromCache('/images/jump_point.png');
+
+        if (cachedImage) {
+            // Если изображение в кэше, используем его
+            this.image = cachedImage;
+        } else {
+            // Иначе загружаем обычным способом
+            this.image = new Image();
+            this.image.src = springImage;
+        }
     }
 
     draw(ctx: CanvasRenderingContext2D | null) {

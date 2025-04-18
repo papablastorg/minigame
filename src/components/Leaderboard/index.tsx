@@ -48,6 +48,8 @@ export const Leaderboard = () => {
     );
   }
 
+  console.log('profile',profile);
+
   return (
     <div className={styles.leaderboardContainer}>
       <div className={styles.header}>{t('leaderboard.title')}</div>
