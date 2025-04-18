@@ -1,9 +1,14 @@
 .nav {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     background-color: black;
-    font-family: 'Gloria Hallelujah', cursive;
+    bottom: 0;
+    width: 100%;
+    top: auto;
+    left: 0;
+    right: 0;
+    position: fixed;
 }
 
 .nav a {

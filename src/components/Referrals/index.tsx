@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import styles from './Referrals.module.css';
+import { ImagePreloader } from '../../common/ImagePreloader';
 
 const data = [
   { name: 'Player 1', score: 10054 },
@@ -34,7 +35,9 @@ export const Referrals = () => {
   return (
     <div className={styles.referralsContainer}>
       <div className={styles.header}>{t('referrals.title')}</div>
-      <img width={250} height={250} src='images/referrals.png' alt="referral" className={styles.referralImage} />
+      <div className={styles.referralImage}>
+        <ImagePreloader src="images/referrals.png" alt="referral" />
+      </div>
       <button onClick={copyLink} className={styles.referralButton}>
         {copied ? t('referrals.copied') : t('referrals.copyLink')}
       </button>

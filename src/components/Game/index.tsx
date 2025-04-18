@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import { useMutation } from '@tanstack/react-query';
 import { WebAppUser } from '@twa-dev/types';
@@ -12,6 +12,9 @@ import { ProfileContext } from '../../context';
 import { useTranslation } from 'react-i18next';
 
 import styles from './Game.module.css';
+import { ImagePreloader } from '../../common/ImagePreloader';
+import { Loader } from '../../common/Loader';
+import { Arrow } from '../icons/Arrow.tsx';
 
 export interface GameProps {
   telegram: WebAppUser,
@@ -23,7 +26,7 @@ const mock = {
   referral: '',
 }
 
-export const Game: React.FC<GameProps> = ({ telegram }) => {
+export const Game = ({ telegram }: GameProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
@@ -102,7 +105,7 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
     const resizeCanvas = () => {
       if (canvas) {
         canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 75;
+        canvas.height = window.innerHeight - 60;
       }
     };
 
@@ -163,12 +166,14 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
     }
   };
 
+  const isLoadingTest = false;
+
   const getActionInfo = useCallback(() => {
     const toInfo = (title: string, img: string, text: string, handler: () => void) => {
       return { title, img , text, handler }
     }
     switch (true) {
-      case !profile: return toInfo('Auth', '', 'Please wait authentication...', () => null);
+      case !profile: return toInfo('Auth', 'images/auth.png', 'Please wait authentication...', () => null);
       case gameState === 'start' : return toInfo('PapaJump', 'images/player_start_img.png', t('game.play'), startGame);
       case gameState === 'gameover' : return toInfo(t('game.gameOver'), 'images/game_over.png', t('game.play'), restartGame);
       default: return undefined;
@@ -180,20 +185,27 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
     if (!info) return null;
     return (
       <div className={styles.overlay}>
-        <img src={info?.img} alt="Player" className={styles.startPlayer} />
+        <div className={styles.startPlayer}>
+          <ImagePreloader src={info?.img} alt="Player" />
+        </div>
         <h1>{ info.title }</h1>
         {gameState === 'gameover' && 
         <p className={styles.gameOverScore}>
           <span className={styles.starStats}>
-            $PAPA: {stars}  <img src={pointImage} alt="point" /> 
+            $PAPApoint: <span>{stars} </span> <ImagePreloader src={pointImage} alt="point" />
             </span>
           </p>
         }
-        <button onClick={info.handler} className={styles.playButton}>
-          { info.text }
-          <span>3/3</span>
-          <img src="images/ticket.png" alt="Player" className={styles.ticket} />
-        </button>
+        {info.title === 'Auth' 
+          ? <p className={styles.authText}>{info.text}</p> 
+          : <button onClick={info.handler} className={styles.playButton}>
+              { info.text }
+              <span>3/3</span>
+              <div className={styles.ticket}>
+                <ImagePreloader src="images/ticket.png" alt="ticket" />
+              </div>
+            </button>
+        }
       </div>
     )
   }, [gameState, getActionInfo, stars])
@@ -205,47 +217,40 @@ export const Game: React.FC<GameProps> = ({ telegram }) => {
         [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
         [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
-        {/* <div className={styles.language}>
-        <LanguageSwitcher />
-        </div> */}
-        <canvas
+        {isLoadingTest && <div className={styles.loaderContainer}><Loader /></div>}
+          <canvas
             ref={canvasRef}
             width={window.innerWidth}
             height={window.innerHeight}
         />
         {action}
-        
         {gameState === 'playing' && (
           <>
            <div className={styles.scoreBoard}>
               <span className={styles.starsCount}>
-                <img src={pointImage} alt="point" />
-                {stars} {t('game.points')}
+                <ImagePreloader src={pointImage} alt="point" />
+                {stars} 
                 </span>
             </div>
             <div className={styles.controls}>
-              <div
+              <button
                   className={classNames(styles.controlButton, styles.left)}
                   onMouseDown={handleLeftButtonDown}
                   onMouseUp={handleButtonUp}
                   onTouchStart={handleLeftButtonDown}
                   onTouchEnd={handleButtonUp}
               >
-                <svg id="Flat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-                  <path d="M228,128a12.00028,12.00028,0,0,1-12,12H68.9707l51.51465,51.51465a12.0001,12.0001,0,0,1-16.9707,16.9707l-72-72a11.99973,11.99973,0,0,1,0-16.9707l72-72a12.0001,12.0001,0,0,1,16.9707,16.9707L68.9707,116H216A12.00028,12.00028,0,0,1,228,128Z"/>
-                </svg>
-              </div>
-              <div
+                <Arrow />
+              </button>
+              <button
                   className={classNames(styles.controlButton, styles.right)}
                   onMouseDown={handleRightButtonDown}
                   onMouseUp={handleButtonUp}
                   onTouchStart={handleRightButtonDown}
                   onTouchEnd={handleButtonUp}
               >
-                <svg id="Flat" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
-                  <path d="M228,128a12.00028,12.00028,0,0,1-12,12H68.9707l51.51465,51.51465a12.0001,12.0001,0,0,1-16.9707,16.9707l-72-72a11.99973,11.99973,0,0,1,0-16.9707l72-72a12.0001,12.0001,0,0,1,16.9707,16.9707L68.9707,116H216A12.00028,12.00028,0,0,1,228,128Z"/>
-                </svg>
-              </div>
+                <Arrow />
+              </button>
             </div>
           </>
         )}

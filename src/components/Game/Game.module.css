@@ -1,7 +1,19 @@
-@import url('https://fonts.googleapis.com/css?family=Gloria+Hallelujah');
+@import url('https://fonts.googleapis.com/css2?family=Russo+One&display=swap');
 
 * {
     box-sizing: border-box;
+}
+
+@keyframes shine {
+    0% {
+        filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+    }
+    50% {
+        filter: drop-shadow(2px 2px 8px rgba(255, 215, 0, 0.6));
+    }
+    100% {
+        filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
+    }
 }
 
 .gameContainer {
@@ -13,6 +25,19 @@
     background-position: center;
     background-repeat: no-repeat;
     transition: background-image .5s ease-out;
+}
+
+.loaderContainer {
+    position: fixed;
+    background-color: #000000;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
 }
 
 .language {
@@ -38,7 +63,7 @@
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    background-image: url('/images/start_background.png');
+    background-image: url('/images/layout_bg.png');
 }
 
 canvas {
@@ -78,6 +103,7 @@ canvas {
     font-family: 'Gloria Hallelujah', cursive;
 }
 
+
 .starsCount {
     display: flex;
     align-items: center;
@@ -98,18 +124,6 @@ canvas {
     }
 }
 
-@keyframes shine {
-    0% {
-        filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
-    }
-    50% {
-        filter: drop-shadow(2px 2px 8px rgba(255, 215, 0, 0.6));
-    }
-    100% {
-        filter: drop-shadow(2px 2px 2px rgba(0, 0, 0, 0.3));
-    }
-}
-
 .starStats {
     display: flex;
     align-items: center;
@@ -120,6 +134,12 @@ canvas {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     margin-top: 20px;
     margin-left: 10px;
+
+    span {
+        color: #FFD700;
+        font-weight: bold;
+        font-size: 22px;
+    }
 
     img {
         width: 25px;
@@ -146,8 +166,17 @@ canvas {
     color: #FFD700;
     margin-top: 0px;
     margin-bottom: 10px;
-    font-family: 'Gloria Hallelujah', cursive;
-    font-weight: normal;
+    font-family: "Russo One", sans-serif;
+    font-style: normal;
+    text-transform: uppercase;
+}
+
+.authText {
+    font-size: 20px;
+    color: #FFD700;
+    margin-top: 0px;
+    margin-bottom: 10px;
+    font-family: "Russo One", sans-serif;
 }
 
 .ticket {
@@ -155,6 +184,11 @@ canvas {
     height: 50px;
     transform: rotate(-45deg);
     margin-left: 10px;
+
+    img {
+        width: 100%;
+        height: 100%;
+      }
 }
 
 .controls {
@@ -163,7 +197,7 @@ canvas {
     left: 0;
     right: 0;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-between;
     padding: 0 20px;
     z-index: 10;
 }
@@ -173,8 +207,8 @@ canvas {
     height: 80px;
     border: 3px solid black;
     margin: 0 10px;
-    background-color: #2a66c2;
-    border-radius: 12px;
+    background-color: #7ED957;
+    border-radius: 25px;
     position: relative;
     display: flex;
     align-items: center;
@@ -190,8 +224,8 @@ canvas {
 }
 
 .controlButton svg {
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
 }
 
 .controlButton.left {
@@ -204,18 +238,29 @@ canvas {
 }
 
 .controlButton:hover {
-    background-color: #211e93;
+    background-color: #5ea441;
 }
 
 .controlButton:active {
-    background-color: #211e93;
+    background-color: #5ea441;
+}
+
+.controlButton:focus {
+    outline: none;
 }
 
 .startPlayer {
     width: 260px;
     height: 260px;
     object-fit: contain;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 100%;
+        height: 100%;
+      }
 }
 
 .playButton {
@@ -228,7 +273,6 @@ canvas {
     font-weight: bold;
     cursor: pointer;
     transition: transform 0.1s ease-in-out;
-    font-family: 'Gloria Hallelujah', cursive;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -257,6 +301,40 @@ canvas {
     margin-top: 0;
     margin-bottom: 1em;
     font-weight: bold;
-    /* font-family: 'Gloria Hallelujah', cursive; */
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+}
+
+@media (max-width: 480px) {
+    .overlay h1 {
+        font-size: 40px;
+    }
+
+    .startPlayer {
+        width: 250px;
+        height: 250px;
+    }
+
+    .starStats {
+        margin: 0;
+        
+        span {
+            color: #FFD700;
+            font-weight: bold;
+            font-size: 22px;
+        }
+    }
+
+    .playButton {
+        font-size: 24px;
+        padding: 10px 28px;
+    }
+
+    .gameOverScore {
+        margin-bottom: 10px;
+    }
+
+    .ticket {
+        width: 30px;
+        height: 30px;
+    }
 }

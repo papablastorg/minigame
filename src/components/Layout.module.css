@@ -9,18 +9,18 @@
     background-position: center;
     background-repeat: no-repeat;
     position: relative;
+}
 
-    .language {
-        position: absolute;
-        right: 15px;
-        top: 15px;
-        z-index: 3;
-    }
+.language {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    z-index: 3;
 }
 
 .content {
     flex: 1;
-    margin-bottom: 70px;
+    margin-bottom: 60px;
 }
 
 .nav {
