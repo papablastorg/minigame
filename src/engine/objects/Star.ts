@@ -1,6 +1,7 @@
 import { BaseObject } from '../interfaces';
 import StoreInstance, { Store } from '../store';
 import pointImage from '/images/PAPApoint.png';
+import { ImagePreloadService } from '../../services';
 
 export class Star extends BaseObject {
     // Базовые константы анимации
@@ -25,8 +26,19 @@ export class Star extends BaseObject {
         super(name);
         this.x = 0;
         this.y = 0;
-        this.image = new Image();
-        this.image.src = pointImage;
+
+        // Попытка получить изображение из кэша
+        const cachedImage = ImagePreloadService.getImageFromCache('/images/PAPApoint.png');
+
+        if (cachedImage) {
+            // Если изображение в кэше, используем его
+            this.image = cachedImage;
+        } else {
+            // Иначе загружаем обычным способом
+            this.image = new Image();
+            this.image.src = pointImage;
+        }
+
         this.floatSpeed = this.BASE_FLOAT_SPEED;
         this.floatAmplitude = this.BASE_FLOAT_AMPLITUDE;
     }

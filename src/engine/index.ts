@@ -5,6 +5,7 @@ import { Spring } from './objects/Spring';
 import { PlatformManager } from './managers';
 import { Manager, BaseObject, Engine } from './interfaces.ts';
 import StoreInstance, { Store } from './store/index.ts';
+import { ImagePreloadService } from '../services';
 
 export class GameEngine extends Engine {
   private canvas: HTMLCanvasElement;
@@ -35,7 +36,13 @@ export class GameEngine extends Engine {
   public start() {
     this.clear();
     super.start();
-    console.log('start in engine')
+    console.log('start in engine');
+    
+    // Проверяем что изображения уже предзагружены
+    if (!ImagePreloadService.areAllImagesLoaded()) {
+      console.warn('Images are not preloaded yet! Game might have visual delays.');
+    }
+    
     this.store.player = new Player('player', this.width, this.height);
     this.store.platforms = [];
     this.store.base = new Base('base', this.width, this.height);

@@ -33,5 +33,9 @@
   },
   "errors": {
     "telegramOnly": "This application can only be opened in Telegram Desktop or Mobile App"
+  },
+  "loading": {
+    "title": "Loading",
+    "resources": "Loading resources..."
   }
 }

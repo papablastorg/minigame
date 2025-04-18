@@ -6,6 +6,7 @@ import { BaseObject } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
 import { Star } from './Star.ts';
 import StoreInstance, { Store } from '../store/index.ts';
+import { ImagePreloadService } from '../../services';
 
 export class Player extends BaseObject {
     // Базовые постоянные скорости и силы (для 60fps)
@@ -46,12 +47,27 @@ export class Player extends BaseObject {
         this.canvasWidth = width;
         this.x = width / 2 - this.width / 2;
         this.y = height - this.height;
-        this.image = new Image();
-        this.imageJumped = new Image();
-        this.imageFall = new Image();
-        this.image.src = playerImage;
-        this.imageJumped.src = playerImageJumped;
-        this.imageFall.src = playerImageFall;
+
+        // Использование предзагруженных изображений из кэша
+        const cachedImage = ImagePreloadService.getImageFromCache('/images/player_jump2.png');
+        const cachedImageJumped = ImagePreloadService.getImageFromCache('/images/player_jumped.png');
+        const cachedImageFall = ImagePreloadService.getImageFromCache('/images/player_jump.png');
+
+        // Если изображения есть в кэше, используем их
+        if (cachedImage && cachedImageJumped && cachedImageFall) {
+            this.image = cachedImage;
+            this.imageJumped = cachedImageJumped;
+            this.imageFall = cachedImageFall;
+        } else {
+            // Резервный вариант, если изображения не были предзагружены
+            this.image = new Image();
+            this.imageJumped = new Image();
+            this.imageFall = new Image();
+            this.image.src = playerImage;
+            this.imageJumped.src = playerImageJumped;
+            this.imageFall.src = playerImageFall;
+        }
+
         this.gravity = this.BASE_GRAVITY;
         this.broken = 0;
     }

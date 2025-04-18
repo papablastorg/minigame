@@ -11,6 +11,7 @@ import styles from './Game.module.css';
 import { ImagePreloader } from '../../common/ImagePreloader';
 import { Loader } from '../../common/Loader';
 import { Arrow } from '../icons/Arrow.tsx';
+import { ImagePreloadService } from '../../services';
 
 export const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -171,15 +172,27 @@ export const Game = () => {
 
   const getActionInfo = useCallback(() => {
     const toInfo = (title: string, img: string, text: string, handler: () => void) => {
-      return { title, img , text, handler }
+      // Проверяем, есть ли изображение в кэше
+      const cachedImage = ImagePreloadService.getImageFromCache(img);
+      if (cachedImage) {
+        console.log(`Image ${img} found in cache and ready to use`);
+      }
+      return { title, img, text, handler }
     }
-    switch (true) {
-      case !profile: return toInfo('Auth', 'images/auth.png', 'Please wait authentication...', () => null);
-      case gameState === 'start' : return toInfo('PapaJump', 'images/player_start_img.png', t('game.play'), startGame);
-      case gameState === 'gameover' : return toInfo(t('game.gameOver'), 'images/game_over.png', t('game.play'), restartGame);
-      default: return undefined;
+    
+    // Всегда используем изображение player_start_img.png для начального экрана,
+    // даже если профиль еще не загружен
+    if (gameState === 'start') {
+      const title = profile ? 'PapaJump' : 'Auth';
+      const text = profile ? t('game.play') : 'Please wait authentication...';
+      const handler = profile ? startGame : () => null;
+      return toInfo(title, 'images/player_start_img.png', text, handler);
+    } else if (gameState === 'gameover') {
+      return toInfo(t('game.gameOver'), 'images/game_over.png', t('game.play'), restartGame);
     }
-  }, [gameState, profile, startGame, t])
+    
+    return undefined;
+  }, [gameState, profile, startGame, t]);
 
   const action = useMemo(() => {
     const info = getActionInfo();
@@ -216,7 +229,6 @@ export const Game = () => {
         [styles.levelOne]: gameState === 'playing' && backgroundLevel === 1,
         [styles.levelTwo]: gameState === 'playing' && backgroundLevel === 2,
         [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
-        [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
         {isLoadingTest && <div className={styles.loaderContainer}><Loader /></div>}
         <canvas

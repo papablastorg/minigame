@@ -7,6 +7,7 @@ import StoreInstance, { Store } from '../store/index.ts';
 import { BaseObject, ObjectSpacing, PlatformObjectSpacingConfig } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
 import { Star } from './Star.ts';
+import { ImagePreloadService } from '../../services';
 
 export class Platform {
     // Базовые константы скорости
@@ -39,9 +40,12 @@ export class Platform {
         if (objects) this.attachedObjects = objects;
         this.setObjectSpacing("spring", { verticalSpacing: -8 });
         this.setObjectSpacing("star", { verticalSpacing: 0 });
-        if (level === 1) this.image.src = platformImage1;
-        else if (level === 2) this.image.src = platformImage2;
-        else this.image.src = platformImage3;
+        
+        // Определяем какое изображение нужно использовать для этого уровня
+        let imagePath = '';
+        if (level === 1) imagePath = '/images/static_platform.png';
+        else if (level === 2) imagePath = '/images/move_platform.png';
+        else imagePath = '/images/broken_platform.png';
 
         if (score >= 5000) this.types = [2, 3, 3, 3, 4, 4, 4, 4];
         else if (score >= 2000 && score < 5000) this.types = [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
@@ -58,10 +62,26 @@ export class Platform {
             this.store.player.broken = 0;
         }
 
-        if (this.type === 1) this.image.src = platformImage1;
-        else if (this.type === 2) this.image.src = platformImage2;
-        else if (this.type === 3) this.image.src = platformImage3;
-        else if (this.type === 4) this.image.src = platformImage4;
+        // Определение пути к изображению на основе типа платформы
+        if (this.type === 1) imagePath = '/images/static_platform.png';
+        else if (this.type === 2) imagePath = '/images/move_platform.png';
+        else if (this.type === 3) imagePath = '/images/broken_platform.png';
+        else if (this.type === 4) imagePath = '/images/flash_platform.png';
+        
+        // Попытка получить изображение из кэша
+        const cachedImage = ImagePreloadService.getImageFromCache(imagePath);
+        
+        if (cachedImage) {
+            // Если изображение в кэше, используем его
+            this.image = cachedImage;
+        } else {
+            // Если нет в кэше, загружаем обычным способом
+            if (this.type === 1) this.image.src = platformImage1;
+            else if (this.type === 2) this.image.src = platformImage2;
+            else if (this.type === 3) this.image.src = platformImage3;
+            else if (this.type === 4) this.image.src = platformImage4;
+        }
+        
         this.moved = 0;
         this.vx = this.BASE_MOVE_SPEED;
     }

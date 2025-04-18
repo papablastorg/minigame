@@ -14,7 +14,7 @@
 .language {
     position: absolute;
     right: 15px;
-    top: 15px;
+    top: 50px;
     z-index: 3;
 }
 
@@ -35,7 +35,7 @@
     top: 15px;
     font-weight: bold;
     font-size: 14px;
-    right: 75px;
+    right: 15px;
     z-index: 3;
     box-shadow: 0 4px 0 #cc7000, 0 5px 15px rgba(0, 0, 0, 0.3), inset 0 -2px 10px rgba(0, 0, 0, 0.2), inset 0 2px 10px rgba(255, 255, 255, 0.3);
     transform: perspective(500px) rotateX(10deg);
