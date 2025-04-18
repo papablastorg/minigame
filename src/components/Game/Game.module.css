@@ -326,8 +326,8 @@ canvas {
 
 .testModeSwitch {
   position: fixed;
-  top: 10px;
-  right: 10px;
+  top: 50px;
+  left: 10px;
   z-index: 100;
   background-color: rgba(0, 0, 0, 0.5);
   border-radius: 8px;
