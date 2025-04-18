@@ -26,7 +26,7 @@ export class GameEngine extends Engine {
     this.canvas = canvas;
     this.ctx = ctx;
     this.width = window.innerWidth;
-    this.height = window.innerHeight - 70;
+    this.height = window.innerHeight - 60;
     this.store.onGameOver = onGameOver;
     this.store.onScoreUpdate = onScoreUpdate;
     this.store.onStarsUpdate = onStarsUpdate;

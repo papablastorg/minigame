@@ -3,3 +3,4 @@ export * from './AirDrop';
 export * from './Leaderboard';
 export * from './Referral';
 export * from './Telegram';
+export * from './Arrow';

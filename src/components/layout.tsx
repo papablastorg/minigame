@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { Nav } from './Nav';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import styles from './Layout.module.css';
@@ -7,7 +7,7 @@ interface LayoutProps {
     children: ReactNode;
 }
 
-export const Layout: React.FC<LayoutProps> = ({ children }) => {
+export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className={styles.layout}>
       <div className={styles.language}>
