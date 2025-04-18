@@ -22,6 +22,8 @@ export const Game = () => {
   const { profile } = useContext(ProfileContext);
   const { start, end } = useGameActions();
   const { t } = useTranslation();
+  const [isMobile, setIsMobile] = useState(false);
+  const [showKeyboardHint, setShowKeyboardHint] = useState(false);
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (gameEngineRef.current) {
@@ -105,7 +107,27 @@ export const Game = () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [handleGameOver, handleScoreUpdate, handleStarsUpdate]);
-  
+
+  useEffect(() => {
+    const checkIfMobile = () => {
+      const userAgent = navigator.userAgent || navigator.vendor || (window as any).opera;
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
+      setIsMobile(isMobileDevice);
+    };
+    
+    checkIfMobile();
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile && gameState === 'playing') {
+      setShowKeyboardHint(true);
+      const timer = setTimeout(() => {
+        setShowKeyboardHint(false);
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isMobile, gameState]);
 
   const startGame = useCallback(() => {
     setGameState('playing');
@@ -211,26 +233,33 @@ export const Game = () => {
                 {stars} 
                 </span>
             </div>
-            <div className={styles.controls}>
-              <button
-                  className={classNames(styles.controlButton, styles.left)}
-                  onMouseDown={handleLeftButtonDown}
-                  onMouseUp={handleButtonUp}
-                  onTouchStart={handleLeftButtonDown}
-                  onTouchEnd={handleButtonUp}
-              >
-                <Arrow />
-              </button>
-              <button
-                  className={classNames(styles.controlButton, styles.right)}
-                  onMouseDown={handleRightButtonDown}
-                  onMouseUp={handleButtonUp}
-                  onTouchStart={handleRightButtonDown}
-                  onTouchEnd={handleButtonUp}
-              >
-                <Arrow />
-              </button>
-            </div>
+            {isMobile && (
+              <div className={styles.controls}>
+                <button
+                    className={classNames(styles.controlButton, styles.left)}
+                    onMouseDown={handleLeftButtonDown}
+                    onMouseUp={handleButtonUp}
+                    onTouchStart={handleLeftButtonDown}
+                    onTouchEnd={handleButtonUp}
+                >
+                  <Arrow />
+                </button>
+                <button
+                    className={classNames(styles.controlButton, styles.right)}
+                    onMouseDown={handleRightButtonDown}
+                    onMouseUp={handleButtonUp}
+                    onTouchStart={handleRightButtonDown}
+                    onTouchEnd={handleButtonUp}
+                >
+                  <Arrow />
+                </button>
+              </div>
+            )}
+            {!isMobile && showKeyboardHint && (
+              <div className={styles.keyboardHint}>
+                {t('game.keyboardHint')}
+              </div>
+            )}
           </>
         )}
       </div>
