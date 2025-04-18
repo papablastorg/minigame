@@ -6,5 +6,8 @@ export const profileService = {
   },
   make: (payload) => {
     return instance.post('/profile', payload);
-  }
+  },
+  leaderboard: () => {
+    return instance.get('/profile/leaderboard')
+  },
 }

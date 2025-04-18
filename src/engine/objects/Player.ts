@@ -8,6 +8,17 @@ import { Star } from './Star.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class Player extends BaseObject {
+    // Базовые постоянные скорости и силы (для 60fps)
+    private readonly BASE_JUMP_VELOCITY = -8;
+    private readonly BASE_HIGH_JUMP_VELOCITY = -16;
+    private readonly BASE_GRAVITY = 0.2;
+    private readonly BASE_HORIZONTAL_ACCEL = 0.15;
+    private readonly BASE_HORIZONTAL_DECEL = 0.1;
+    private readonly BASE_MAX_HORIZONTAL_SPEED = 8;
+    private readonly BASE_MAX_FALL_SPEED = 8;
+    private readonly BASE_PLATFORM_MOVE_SPEED = 12;
+    private readonly BASE_PLAYER_MOVE_SPEED = 8;
+
     public vy = 6;
     public vx = 0;
     public isMovingLeft = false;
@@ -28,7 +39,6 @@ export class Player extends BaseObject {
     public broken: number;
     public canvasHeight: number;
     public canvasWidth: number;
-    private readonly maxFallSpeed = 8;
 
     constructor(name: string, width: number, height: number) {
         super(name);
@@ -42,7 +52,7 @@ export class Player extends BaseObject {
         this.image.src = playerImage;
         this.imageJumped.src = playerImageJumped;
         this.imageFall.src = playerImageFall;
-        this.gravity = 0.2;
+        this.gravity = this.BASE_GRAVITY;
         this.broken = 0;
     }
 
@@ -93,18 +103,18 @@ export class Player extends BaseObject {
     }
 
     jump() {
-        this.vy = -8;
+        this.vy = this.BASE_JUMP_VELOCITY;
     }
 
     jumpHigh() {
-        this.vy = -16;
+        this.vy = this.BASE_HIGH_JUMP_VELOCITY;
     }
 
     land() {
         // State is automatically reset when vy <= 0
     }
 
-    public update() {
+    public update(deltaTime: number) {
         // Update direction based on movement
         if (this.store.player.isMovingLeft) {
             this.store.player.dir = "left";
@@ -112,26 +122,30 @@ export class Player extends BaseObject {
             this.store.player.dir = "right";
         }
 
-        // Movement
+        const horizontalAccel = this.BASE_HORIZONTAL_ACCEL * deltaTime;
+        const horizontalDecel = this.BASE_HORIZONTAL_DECEL * deltaTime;
+        const maxHorizontalSpeed = this.BASE_MAX_HORIZONTAL_SPEED;
+        
+        // Movement с учетом deltaTime
         if (this.store.player.isMovingLeft) {
-            this.store.player.x += this.store.player.vx;
-            this.store.player.vx -= 0.15;
+            this.store.player.x += this.store.player.vx * deltaTime;
+            this.store.player.vx -= horizontalAccel;
         } else {
-            this.store.player.x += this.store.player.vx;
-            if (this.store.player.vx < 0) this.store.player.vx += 0.1;
+            this.store.player.x += this.store.player.vx * deltaTime;
+            if (this.store.player.vx < 0) this.store.player.vx += horizontalDecel;
         }
 
         if (this.store.player.isMovingRight) {
-            this.store.player.x += this.store.player.vx;
-            this.store.player.vx += 0.15;
+            this.store.player.x += this.store.player.vx * deltaTime;
+            this.store.player.vx += horizontalAccel;
         } else {
-            this.store.player.x += this.store.player.vx;
-            if (this.store.player.vx > 0) this.store.player.vx -= 0.1;
+            this.store.player.x += this.store.player.vx * deltaTime;
+            if (this.store.player.vx > 0) this.store.player.vx -= horizontalDecel;
         }
 
         // Speed limits
-        if (this.store.player.vx > 8) this.store.player.vx = 8;
-        else if (this.store.player.vx < -8) this.store.player.vx = -8;
+        if (this.store.player.vx > maxHorizontalSpeed) this.store.player.vx = maxHorizontalSpeed;
+        else if (this.store.player.vx < -maxHorizontalSpeed) this.store.player.vx = -maxHorizontalSpeed;
 
         // Jump on base
         if ((this.store.player.y + this.store.player.height) > this.store.base.y && this.store.base.y < this.canvasHeight) {
@@ -147,19 +161,24 @@ export class Player extends BaseObject {
         if (this.store.player.x > this.canvasWidth) this.store.player.x = 0 - this.store.player.width;
         else if (this.store.player.x < 0 - this.store.player.width) this.store.player.x = this.canvasWidth;
 
+        // Гравитация с учетом deltaTime
+        const gravity = this.BASE_GRAVITY * deltaTime;
+        const maxFallSpeed = this.BASE_MAX_FALL_SPEED;
+
         // Gravity and platform movement
         if (this.store.player.y >= (this.canvasHeight / 2) - (this.store.player.height / 2)) {
-            this.store.player.y += this.store.player.vy;
-            this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
+            this.store.player.y += this.store.player.vy * deltaTime;
+            this.store.player.vy = Math.min(this.store.player.vy + gravity, maxFallSpeed);
         } else {
-            this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
+            this.store.player.vy = Math.min(this.store.player.vy + gravity, maxFallSpeed);
             if (this.store.player.vy >= 0) {
-                this.store.player.y += this.store.player.vy;
-                this.store.player.vy = Math.min(this.store.player.vy + this.gravity, this.maxFallSpeed);
+                this.store.player.y += this.store.player.vy * deltaTime;
+                this.store.player.vy = Math.min(this.store.player.vy + gravity, maxFallSpeed);
             }
 
-            this.score += 1;
-            this.store.onScoreUpdate(this.score);
+            // Увеличение счета в зависимости от скорости обновления кадров
+            this.score += 1 * deltaTime;
+            this.store.onScoreUpdate(Math.floor(this.score));
         }
 
         // Platform collisions
@@ -229,7 +248,7 @@ export class Player extends BaseObject {
         });
 
         if (this.store.player.isDead) {
-            this.gameOver();
+            this.gameOver(deltaTime);
         }
     }
 
@@ -239,13 +258,14 @@ export class Player extends BaseObject {
         return 1;
     }
 
-    private gameOver() {
+    private gameOver(deltaTime: number) {
+        const moveSpeed = this.BASE_PLATFORM_MOVE_SPEED * deltaTime;
         this.store.platforms.forEach(p => {
-            p.y -= 12;
+            p.y -= moveSpeed;
         });
 
         if (this.store.player.y > this.canvasHeight/2 && this.flag === 0) {
-            this.store.player.y -= 8;
+            this.store.player.y -= this.BASE_PLAYER_MOVE_SPEED * deltaTime;
             this.store.player.vy = 0;
         } else if (this.store.player.y < this.canvasHeight / 2) {
             this.flag = 1;

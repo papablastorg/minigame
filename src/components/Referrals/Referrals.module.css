@@ -14,6 +14,36 @@
       text-align: center;
   }
 
+  /* Loader overlay styles - covers the entire screen */
+  .loaderOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+  }
+
+  /* Error container styles */
+  .errorContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+  }
+
+  .errorMessage {
+    color: #ff6b6b;
+    font-size: 18px;
+    text-align: center;
+    padding: 20px;
+  }
+
   .referralImage {
     width: 250px;
     height: 250px;
@@ -101,4 +131,3 @@
       font-weight: bold;
       margin-right: 10px;
   }
-  
