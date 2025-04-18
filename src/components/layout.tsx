@@ -10,6 +10,9 @@ interface LayoutProps {
 export const Layout = ({ children }: LayoutProps) => {
   return (
     <div className={styles.layout}>
+      <a href="https://t.me/blum/app?startapp=memepadjetton_PAPA_WMm5z-ref_i6eMS3S5Fj" className={styles.coin}>
+       <span>$PAPA</span>
+      </a>
       <div className={styles.language}>
          <LanguageSwitcher />
       </div>
