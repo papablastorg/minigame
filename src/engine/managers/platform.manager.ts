@@ -90,6 +90,13 @@ export class PlatformManager extends Manager {
       if (this.store.player.vy < 0) {
         this.store.platforms.forEach( (p, i) => {
           p.y -= this.store.player.vy * deltaTime;
+          
+          p.attachedObjects.forEach(obj => {
+            if ('y' in obj && typeof obj.y === 'number') {
+              obj.y -= this.store.player.vy * deltaTime;
+            }
+          });
+          
           if (p.y > this.height) {
             const currentLevel = this.store.player.getCurrentLevel();
             this.store.platforms[i] = new Platform(
