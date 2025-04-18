@@ -20,6 +20,8 @@ export const Game = () => {
   const [stars, setStars] = useState(0);
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
+  // Добавляем состояние для локального тестового режима
+  const [isTestMode, setIsTestMode] = useState(false);
   const { profile } = useContext(ProfileContext);
   const { start, end } = useGameActions();
   const { t } = useTranslation();
@@ -50,8 +52,13 @@ export const Game = () => {
   const handleGameOver = useCallback(() => {
     if (gameState === 'gameover') return;
     setGameState('gameover');
-    end({ score, stars });
-  }, [end, gameState, score, stars])
+    // Отправляем данные на сервер только если не в тестовом режиме
+    if (!isTestMode) {
+      end({ score, stars });
+    } else {
+      console.log('Test mode: Game Over data not sent to server', { score, stars });
+    }
+  }, [end, gameState, score, stars, isTestMode]);
 
   const handleScoreUpdate = useCallback((newScore: number) => {
     setScore(newScore);
@@ -136,8 +143,13 @@ export const Game = () => {
     setStars(0);
     setBackgroundLevel(1);
     gameEngineRef.current?.start();
-    start()
-  },[start]);
+    // Отправляем данные на сервер только если не в тестовом режиме
+    if (!isTestMode) {
+      start();
+    } else {
+      console.log('Test mode: Game start not sent to server');
+    }
+  },[start, isTestMode]);
 
   const restartGame = () => {
     setGameState('playing');
@@ -180,19 +192,27 @@ export const Game = () => {
       return { title, img, text, handler }
     }
     
-    // Всегда используем изображение player_start_img.png для начального экрана,
-    // даже если профиль еще не загружен
+    // В тестовом режиме или при наличии профиля показываем экран запуска игры
     if (gameState === 'start') {
-      const title = profile ? 'PapaJump' : 'Auth';
-      const text = profile ? t('game.play') : 'Please wait authentication...';
-      const handler = profile ? startGame : () => null;
-      return toInfo(title, 'images/player_start_img.png', text, handler);
+      // Если в тестовом режиме или профиль загружен, показываем кнопку старта
+      if (isTestMode || profile) {
+        const title = 'PapaJump';
+        const text = t('game.play');
+        const handler = startGame;
+        return toInfo(title, 'images/player_start_img.png', text, handler);
+      } else {
+        // Профиль не загружен и не в тестовом режиме - показываем экран авторизации
+        const title = 'Auth';
+        const text = 'Please wait authentication...';
+        const handler = () => null;
+        return toInfo(title, 'images/player_start_img.png', text, handler);
+      }
     } else if (gameState === 'gameover') {
       return toInfo(t('game.gameOver'), 'images/game_over.png', t('game.play'), restartGame);
     }
     
     return undefined;
-  }, [gameState, profile, startGame, t]);
+  }, [gameState, profile, startGame, t, isTestMode]);
 
   const action = useMemo(() => {
     const info = getActionInfo();
@@ -230,6 +250,17 @@ export const Game = () => {
         [styles.levelTwo]: gameState === 'playing' && backgroundLevel === 2,
         [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
       })}>
+        {/* Добавляем переключатель тестового режима */}
+        <div className={styles.testModeSwitch}>
+          <input 
+            type="checkbox" 
+            id="testModeSwitch" 
+            checked={isTestMode} 
+            onChange={() => setIsTestMode(!isTestMode)} 
+          />
+          <label htmlFor="testModeSwitch">Тестовый режим</label>
+        </div>
+        
         {isLoadingTest && <div className={styles.loaderContainer}><Loader /></div>}
         <canvas
             ref={canvasRef}

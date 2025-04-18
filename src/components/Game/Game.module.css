@@ -324,6 +324,24 @@ canvas {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
+.testModeSwitch {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  padding: 5px 10px;
+  color: white;
+  display: flex;
+  align-items: center;
+  font-size: 12px;
+}
+
+.testModeSwitch input {
+  margin-right: 5px;
+}
+
 @media (max-width: 480px) {
     .overlay h1 {
         font-size: 40px;
