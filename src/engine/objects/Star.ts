@@ -67,10 +67,10 @@ export class Star extends BaseObject {
         ctx.save();
         ctx.globalAlpha = this.opacity;
 
-        let yOffset = 0;
-        if (this.state === 0) {
-            // Используем более выраженную анимацию с синусом
-            yOffset = Math.sin((Date.now() / 500) + this.timeOffset) * this.floatAmplitude;
+        let yOffset = Math.sin((Date.now() / 500) + this.timeOffset) * this.floatAmplitude;
+        
+        if (this.state === 1) {
+            yOffset -= (1 - this.opacity) * 5;
         }
 
         if (this.image.complete) {
@@ -107,13 +107,12 @@ export class Star extends BaseObject {
             ctx.closePath();
             ctx.fill();
             ctx.stroke();
-            if (this.state === 0) {
-                // Используем системный таймер для более выраженного мерцания
-                const pulseFactor = (Math.sin(Date.now() / 300) + 1) / 2;
-                ctx.globalAlpha = pulseFactor * this.opacity;
-                ctx.strokeStyle = '#FFFFFF';
-                ctx.stroke();
-            }
+            
+            // Добавляем пульсирующее мерцание независимо от состояния
+            const pulseFactor = (Math.sin(Date.now() / 300) + 1) / 2;
+            ctx.globalAlpha = pulseFactor * this.opacity;
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.stroke();
         }
         
         ctx.restore();
