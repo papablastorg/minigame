@@ -104,11 +104,24 @@ export const Game = ({ telegram }: GameProps) => {
 
     const resizeCanvas = () => {
       if (canvas) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 60;
+        const dpr = window.devicePixelRatio || 1;
+        const logicalWidth = window.innerWidth;
+        const logicalHeight = window.innerHeight - 60;
+        
+        // Устанавливаем размеры в DOM (CSS размер)
+        canvas.style.width = `${logicalWidth}px`;
+        canvas.style.height = `${logicalHeight}px`;
+        
+        // Устанавливаем физические размеры канваса с учётом DPI
+        canvas.width = logicalWidth * dpr;
+        canvas.height = logicalHeight * dpr;
+        
+        // Сбрасываем масштабирование контекста
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        // Масштабируем контекст, чтобы наша логическая система координат соответствовала размеру экрана
+        ctx.scale(dpr, dpr);
       }
     };
-
    
     const gameEngine = new GameEngine(canvas, ctx, handleScoreUpdate, handleStarsUpdate, handleGameOver);
 
@@ -218,7 +231,7 @@ export const Game = ({ telegram }: GameProps) => {
         [styles.startScreen]: gameState === 'start' || gameState === 'gameover'
       })}>
         {isLoadingTest && <div className={styles.loaderContainer}><Loader /></div>}
-          <canvas
+        <canvas
             ref={canvasRef}
             width={window.innerWidth}
             height={window.innerHeight}
