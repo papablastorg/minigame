@@ -12,7 +12,7 @@ export abstract class Manager {
   constructor(name: string) {
     this.name = name;
   }
-  update() {}
+  update(deltaTime: number) {}
 
   draw(_ctx: CanvasRenderingContext2D | null) {}
 
@@ -25,19 +25,28 @@ export abstract class BaseObject {
   constructor(name: string) {
     this.name = name;
   }
-  update() {}
+  update(deltaTime: number) {}
   start() {}
   draw(_ctx: CanvasRenderingContext2D | null) {}
 }
 
 export abstract class Engine {
   private animationFrameId: number | null = null;
+  private lastTime: number = 0;
 
   start() {
+    this.lastTime = performance.now();
     if (this.animationFrameId === null) this.update();
   }
 
-  update() {
+  update(timestamp = performance.now()) {
+    const deltaTime = (timestamp - this.lastTime) / 16.67; // нормализуем к ~60 FPS
+    this.lastTime = timestamp;
+    this.updateGame(deltaTime);
     this.animationFrameId = requestAnimationFrame(this.update.bind(this));
+  }
+
+  updateGame(deltaTime: number) {
+    // Переопределяется в дочернем классе
   }
 }

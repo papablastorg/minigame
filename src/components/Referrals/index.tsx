@@ -1,8 +1,12 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ProfileContext } from '../../context';
+import { useReferrals } from '../../hooks/useReferrals';
+import { Loader } from '../../common/Loader';
 import styles from './Referrals.module.css';
+import { ImagePreloader } from '../../common/ImagePreloader';
 
-const data = [
+const mockData = [
   { name: 'Player 1', score: 10054 },
   { name: 'Player 2', score: 9000 },
   { name: 'Player 3', score: 8000 },
@@ -19,22 +23,44 @@ const referralCount: number = 10;
 
 export const Referrals = () => {
   const [copied, setCopied] = useState(false);
+  const { profile } = useContext(ProfileContext);
+  const { data: referrals, isLoading, error } = useReferrals();
   const { t } = useTranslation();
 
   const copyLink = useCallback(() => {
     setCopied(true);
-    if(!copied) {
-      navigator.clipboard.writeText('https://t.me/referral_bot?start=123');
+    if (!copied) {
+      navigator.clipboard.writeText(`https://t.me/papablast_bot?referral=${profile?.referral?.code || ''}`);
       setTimeout(() => {
         setCopied(false);
       }, 4000);
     }
-  }, [copied]);
+  }, [copied, profile]);
+
+  if (isLoading) {
+    return (
+      <div className={styles.loaderOverlay}>
+        <Loader />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className={styles.errorContainer}>
+        <div className={styles.errorMessage}>{t('referrals.error', 'Error loading referral data')}</div>
+      </div>
+    );
+  }
+
+  const referralsData = referrals?.data || mockData;
 
   return (
     <div className={styles.referralsContainer}>
       <div className={styles.header}>{t('referrals.title')}</div>
-      <img width={250} height={250} src='images/referrals.png' alt="referral" className={styles.referralImage} />
+      <div className={styles.referralImage}>
+        <ImagePreloader src="images/referrals.png" alt="referral" />
+      </div>
       <button onClick={copyLink} className={styles.referralButton}>
         {copied ? t('referrals.copied') : t('referrals.copyLink')}
       </button>
@@ -52,14 +78,14 @@ export const Referrals = () => {
       )}
       {referralCount > 0 && (
         <div className={styles.playerList}>
-          {data.map((player, index) => {
+          {referralsData.map((player, index) => {
             return (
               <div className={styles.playerItem} key={index}>
                 <span className={styles.playerRank}>{index + 1}.</span>
-                <span className={styles.playerName}>{player.name}</span>
-                <span className={styles.playerScore}>{player.score}</span>
+                <span className={styles.playerName}>{player.firstname}</span>
+                <span className={styles.playerScore}>{player.count}</span>
               </div>
-            )
+            );
           })}
         </div>
       )}

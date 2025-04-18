@@ -25,8 +25,8 @@ export class GameEngine extends Engine {
     super();
     this.canvas = canvas;
     this.ctx = ctx;
-    this.width = canvas.width;
-    this.height = canvas.height;
+    this.width = window.innerWidth;
+    this.height = window.innerHeight - 60;
     this.store.onGameOver = onGameOver;
     this.store.onScoreUpdate = onScoreUpdate;
     this.store.onStarsUpdate = onStarsUpdate;
@@ -36,15 +36,15 @@ export class GameEngine extends Engine {
     this.clear();
     super.start();
     console.log('start in engine')
-    this.store.player = new Player('player', this.canvas.width, this.canvas.height);
+    this.store.player = new Player('player', this.width, this.height);
     this.store.platforms = [];
-    this.store.base = new Base('base', this.canvas.width, this.canvas.height);
+    this.store.base = new Base('base', this.width, this.height);
     this.store.platformBroken = new PlatformBroken('platformBroken');
     this.store.spring = new Spring('spring');
     this.register(this.store.player);
     this.register(this.store.base);
     this.register(this.store.platformBroken);
-    this.register(new PlatformManager('platform', this.canvas.width, this.canvas.height));
+    this.register(new PlatformManager('platform', this.width, this.height));
     this.objects.forEach((o) => o.start());
     this.managers.forEach((m) => m.start());
   }
@@ -59,12 +59,10 @@ export class GameEngine extends Engine {
     this.start();
   }
 
-
-  public update() {
-    super.update();
-    this.ctx.clearRect(0, 0, this.width, this.height);
-    this.managers.forEach((m) => {m.update(); m.draw(this.ctx)});
-    this.objects.forEach((o) => {o.update(); o.draw(this.ctx)});
+  public updateGame(deltaTime: number) {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    this.managers.forEach((m) => {m.update(deltaTime); m.draw(this.ctx)});
+    this.objects.forEach((o) => {o.update(deltaTime); o.draw(this.ctx)});
   }
 
   private register(entry: BaseObject | Manager) {

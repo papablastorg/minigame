@@ -48,7 +48,9 @@ export class Spring extends BaseObject {
         }
     }
 
-    update() {
+    // Принимаем deltaTime для совместимости, но не используем его здесь,
+    // так как пружина использует setTimeout для анимации
+    update(deltaTime: number = 1) {
         // If spring is in compressed state, schedule reset
         if (this.state === 1 && !this.animationTimer) {
             this.animationTimer = window.setTimeout(() => {

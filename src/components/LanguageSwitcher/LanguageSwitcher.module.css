@@ -82,3 +82,10 @@
   color: #ffffff;
   font-weight: bold;
 }
+
+@media (max-width: 480px) {
+  .dropdownButton {
+    height: 30px;
+    min-width: 45px;
+  }
+}

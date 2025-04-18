@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import WebApp from '@twa-dev/sdk';
-import { WebAppUser } from '@twa-dev/types';
 import { RouterProvider, createBrowserRouter } from 'react-router';
 import { CONFIG } from './config';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -11,6 +10,7 @@ import { Leaderboard } from './components/Leaderboard';
 import { Referrals } from './components/Referrals';
 import { Layout } from './components/layout';
 import { AirDrop } from './components/AirDrop';
+import { AuthWrapper } from './components/AuthWrapper';
 import styles from './App.module.css';
 
 function App() {
@@ -40,10 +40,9 @@ function App() {
   }
 
   const baseUrl = CONFIG.BASE_URL;
-  const telegram = WebApp.initDataUnsafe.user as WebAppUser;
 
   const router = createBrowserRouter([
-    { path: `${baseUrl}`, element: <Layout> <Game telegram={telegram} /> </Layout> },
+    { path: `${baseUrl}`, element: <Layout> <Game /> </Layout> },
     { path: `${baseUrl}leaderboard`, element: <Layout> <Leaderboard /> </Layout> },
     { path: `${baseUrl}referral`, element: <Layout> <Referrals /> </Layout> },
     { path: `${baseUrl}airdrop`, element: <Layout> <AirDrop /> </Layout> },
@@ -54,7 +53,9 @@ function App() {
     <div className='App'>
       <QueryClientProvider client={queryClient}>
         <ProfileContextProvider>
-          <RouterProvider router={router} />
+          <AuthWrapper>
+            <RouterProvider router={router} />
+          </AuthWrapper>
         </ProfileContextProvider>
       </QueryClientProvider>
     </div>
