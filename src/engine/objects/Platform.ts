@@ -6,8 +6,12 @@ import platformImage4 from '/images/flash_platform.png';
 import StoreInstance, { Store } from '../store/index.ts';
 import { BaseObject, ObjectSpacing, PlatformObjectSpacingConfig } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
+import { Star } from './Star.ts';
 
 export class Platform {
+    // Базовые константы скорости
+    private readonly BASE_MOVE_SPEED = 1;
+
     public x: number;
     public y: number;
     public width: number;
@@ -59,7 +63,7 @@ export class Platform {
         else if (this.type === 3) this.image.src = platformImage3;
         else if (this.type === 4) this.image.src = platformImage4;
         this.moved = 0;
-        this.vx = 1;
+        this.vx = this.BASE_MOVE_SPEED;
     }
 
     public attachObject(object: BaseObject) {
@@ -101,10 +105,14 @@ export class Platform {
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
         
-        this.updateAttachedObjectsPosition();
+        // Очищаем список объектов от тех, что должны быть скрыты
+        this.cleanupAttachedObjects();
+        
+        // Теперь рисуем только видимые объекты
         this.attachedObjects.forEach(object => {
-            if (object.name === 'star') object.draw(ctx);
-            else if (object.name === 'spring' && (this.type === 1 || this.type === 2)) object.draw(ctx);
+            if (object.name === 'star' || (object.name === 'spring' && (this.type === 1 || this.type === 2))) {
+                object.draw(ctx);
+            }
         });
     }
 
@@ -118,6 +126,17 @@ export class Platform {
                 if (object instanceof Spring) object.state = 0;
             }
         });
+    }
+
+    private cleanupAttachedObjects() {
+        // Находим звезды с состоянием state=1 и низкой прозрачностью
+        for (let i = this.attachedObjects.length - 1; i >= 0; i--) {
+            const obj = this.attachedObjects[i];
+            // Если это звезда, которая была собрана и уже почти прозрачная - удаляем её
+            if (obj instanceof Star && obj.state === 1 && obj.getOpacity() < 0.05) {
+                this.attachedObjects.splice(i, 1);
+            }
+        }
     }
 
     private isPositionable(object: BaseObject): object is BaseObject & {
@@ -138,17 +157,22 @@ export class Platform {
         );
     }
 
-    update() {
+    update(deltaTime: number = 1) {
         if (this.type === 2) {
-            if (this.x < 0 || this.x + this.width > window.innerWidth) this.vx *= -1
-            this.x += this.vx;
+            if (this.x < 0 || this.x + this.width > window.innerWidth) this.vx *= -1;
+            this.x += this.vx * deltaTime;
         }
 
+        // Обновляем все прикрепленные объекты
         this.attachedObjects.forEach((obj, index) => {
+            // Обновляем каждый объект с учетом deltaTime
+            obj.update(deltaTime);
+            
+            // Удаляем объекты, если платформа вышла за границы экрана
             if (this.y > window.innerHeight) {
                 if (obj instanceof Spring) obj.cleanup();
                 this.attachedObjects.splice(index, 1);
-            } 
+            }
         });
 
         this.updateAttachedObjectsPosition();

@@ -5,6 +5,9 @@ import { Star } from '../objects/Star.ts';
 import StoreInstance, { Store } from '../store/index.ts';
 
 export class PlatformManager extends Manager {
+  // Базовые константы скорости
+  private readonly BASE_BROKEN_PLATFORM_FALL_SPEED = 8;
+
   public platforms: Platform[] = [];
   public position: number = 0;
   public platformCount: number = 10;
@@ -19,9 +22,9 @@ export class PlatformManager extends Manager {
     this.height = height;
   }
 
-  update() {
-    this.updatePlatforms();
-    this.generatePlatforms();
+  update(deltaTime: number) {
+    this.updatePlatforms(deltaTime);
+    this.generatePlatforms(deltaTime);
   }
 
   draw(ctx: CanvasRenderingContext2D) {
@@ -82,11 +85,11 @@ export class PlatformManager extends Manager {
     this.store.platforms = this.platforms;
   }
 
-  private generatePlatforms() {
+  private generatePlatforms(deltaTime: number) {
     if (this.store.player.y <= (this.height / 2) - (this.store.player.height / 2)) {
       if (this.store.player.vy < 0) {
         this.store.platforms.forEach( (p, i) => {
-          p.y -= this.store.player.vy;
+          p.y -= this.store.player.vy * deltaTime;
           if (p.y > this.height) {
             const currentLevel = this.store.player.getCurrentLevel();
             this.store.platforms[i] = new Platform(
@@ -98,22 +101,22 @@ export class PlatformManager extends Manager {
             );
           }
         } );
-        this.store.base.y -= this.store.player.vy;
+        this.store.base.y -= this.store.player.vy * deltaTime;
       }
     }
   }
 
-  private updatePlatforms() {
+  private updatePlatforms(deltaTime: number) {
     this.platforms.forEach(p => {
       if (p.type === 2) {
         if (p.x < 0 || p.x + p.width > this.width) p.vx *= -1;
-        p.x += p.vx;
+        p.x += p.vx * deltaTime;
       }
-      p.update();
+      p.update(deltaTime);
     });
 
     if (this.store.platformBroken.appearance) {
-      this.store.platformBroken.y += 8;
+      this.store.platformBroken.y += this.BASE_BROKEN_PLATFORM_FALL_SPEED * deltaTime;
       if (this.store.platformBroken.y > this.height) {
         this.store.platformBroken.appearance = false;
       }

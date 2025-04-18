@@ -59,11 +59,10 @@ export class GameEngine extends Engine {
     this.start();
   }
 
-  public update() {
-    super.update();
+  public updateGame(deltaTime: number) {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.managers.forEach((m) => {m.update(); m.draw(this.ctx)});
-    this.objects.forEach((o) => {o.update(); o.draw(this.ctx)});
+    this.managers.forEach((m) => {m.update(deltaTime); m.draw(this.ctx)});
+    this.objects.forEach((o) => {o.update(deltaTime); o.draw(this.ctx)});
   }
 
   private register(entry: BaseObject | Manager) {

@@ -1,13 +1,9 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import { useMutation } from '@tanstack/react-query';
-import { WebAppUser } from '@twa-dev/types';
 import pointImage from '/images/PAPApoint.png';
 
 import { GameEngine } from '../../engine';
 import { useGameActions } from './useGameActions.ts';
-import { useProfile } from '../../hooks/useProfile.ts';
-import { profileService } from '../../services';
 import { ProfileContext } from '../../context';
 import { useTranslation } from 'react-i18next';
 
@@ -16,31 +12,16 @@ import { ImagePreloader } from '../../common/ImagePreloader';
 import { Loader } from '../../common/Loader';
 import { Arrow } from '../icons/Arrow.tsx';
 
-export interface GameProps {
-  telegram: WebAppUser,
-}
-
-const mock = {
-  telegramId: '11112222',
-  firstname: 'Tilda',
-  referral: '',
-}
-
-export const Game = ({ telegram }: GameProps) => {
+export const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [gameState, setGameState] = useState<'start' | 'playing' | 'gameover'>('start');
   const [score, setScore] = useState(0);
   const [stars, setStars] = useState(0);
   const [backgroundLevel, setBackgroundLevel] = useState(1);
   const gameEngineRef = useRef<GameEngine | null>(null);
-  const { setProfile, profile } = useContext(ProfileContext);
-  const { data: incomeProfile, isLoading, isPending } = useProfile();
+  const { profile } = useContext(ProfileContext);
   const { start, end } = useGameActions();
   const { t } = useTranslation();
-
-  const { mutateAsync: makeProfile } = useMutation({
-    mutationFn: profileService.make,
-  });
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (gameEngineRef.current) {
@@ -62,21 +43,6 @@ export const Game = ({ telegram }: GameProps) => {
       }
     }
   };
-
-  const authVerify = useCallback(async () => {
-    if (!incomeProfile && !isLoading && !isPending) {
-      const payload = { 
-        telegramId: telegram?.id || mock.telegramId,
-         firstname: telegram?.first_name || mock.firstname,
-         referral: mock.referral,
-        }
-      const p = await makeProfile(payload);
-      return setProfile(p);
-    }
-    setProfile(incomeProfile);
-  }, [incomeProfile, isLoading, isPending, setProfile, makeProfile, telegram?.id, telegram?.first_name])
-
-  useEffect(() => void authVerify(), [authVerify] );
 
   const handleGameOver = useCallback(() => {
     if (gameState === 'gameover') return;
