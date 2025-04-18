@@ -11,17 +11,13 @@ import { Referrals } from './components/Referrals';
 import { Layout } from './components/layout';
 import { AirDrop } from './components/AirDrop';
 import { AuthWrapper } from './components/AuthWrapper';
+import { GlobalImagePreloader } from './common/ImagePreloader';
 import styles from './App.module.css';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
   const { t } = useTranslation();
   
-  useEffect(() => {
-    WebApp.ready();
-    console.log('WebApp.initData',WebApp.initData);
-    console.log('WebApp.initDataUnsafe',WebApp.initDataUnsafe);
-  }, []);
 
   // Check if the app is running within Telegram
   if (!WebApp.initData && CONFIG.ENV !== 'development') {
@@ -39,6 +35,30 @@ function App() {
     );
   }
 
+  useEffect(() => {
+    WebApp.ready();
+    console.log('Telegram WebApp version:', WebApp.version);
+    try {
+      WebApp.expand();
+      // Проверяем поддержку полноэкранного режима (Bot API 8.0+)
+      if (WebApp.isVersionAtLeast('8.0')) {
+        console.log('Fullscreen mode is supported, enabling...');
+        WebApp.requestFullscreen();
+        // Добавляем слушатель событий для кнопки "Назад"
+        WebApp.onEvent('backButtonClicked', () => {
+          WebApp.exitFullscreen();
+        });
+      } else {
+        console.log('Fullscreen mode is not supported in this Telegram client version');
+      }
+    } catch (error) {
+      console.warn('Error while interacting with Telegram WebApp API:', error);
+    }
+    
+    console.log('WebApp.initData', WebApp.initData);
+    console.log('WebApp.initDataUnsafe', WebApp.initDataUnsafe);
+  }, []);
+
   const baseUrl = CONFIG.BASE_URL;
 
   const router = createBrowserRouter([
@@ -53,9 +73,11 @@ function App() {
     <div className='App'>
       <QueryClientProvider client={queryClient}>
         <ProfileContextProvider>
-          <AuthWrapper>
-            <RouterProvider router={router} />
-          </AuthWrapper>
+          <GlobalImagePreloader>
+            <AuthWrapper>
+              <RouterProvider router={router} />
+            </AuthWrapper>
+          </GlobalImagePreloader>
         </ProfileContextProvider>
       </QueryClientProvider>
     </div>

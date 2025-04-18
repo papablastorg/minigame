@@ -14,7 +14,7 @@ export const AirDrop = () => {
           <ImagePreloader src="images/airdrop.png" alt="airdrop" />
         </div>
         <div className={styles.airDropButtonContainer}>
-          <button onClick={() => window.open('https://t.me/blum/app?startapp=memepadjetton_PAPA_WMm5z-ref_i6eMS3S5Fj', '_blank')} className={styles.joinChanelButton}>
+          <button onClick={() => window.open('https://t.me/papablast_news', '_blank')} className={styles.joinChanelButton}>
             <Telegram />
             {t('airdrop.joinChannel')}
           </button>

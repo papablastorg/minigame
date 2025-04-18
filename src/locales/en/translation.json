@@ -8,7 +8,8 @@
   "game": {
     "gameOver": "Game Over",
     "play": "PLAY",
-    "points": "points"
+    "points": "points",
+    "keyboardHint": "Use arrow keys on your keyboard to control the game"
   },
   "leaderboard": {
     "title": "LEADERBOARD",
@@ -32,5 +33,9 @@
   },
   "errors": {
     "telegramOnly": "This application can only be opened in Telegram Desktop or Mobile App"
+  },
+  "loading": {
+    "title": "Loading",
+    "resources": "Loading resources..."
   }
 }
