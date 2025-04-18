@@ -179,7 +179,7 @@ export const Game = () => {
           ? <p className={styles.authText}>{info.text}</p> 
           : <button onClick={info.handler} className={styles.playButton}>
               { info.text }
-              <span>3/3</span>
+              <span className={styles.countTicket}>3/3</span>
               <div className={styles.ticket}>
                 <ImagePreloader src="images/ticket.png" alt="ticket" />
               </div>
