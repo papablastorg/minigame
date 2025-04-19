@@ -1,7 +1,3 @@
-import playerImage from '/images/player_jump2.png';
-import playerImageJumped from '/images/player_jumped.png';
-import playerImageFall from '/images/player_jump.png';
-
 import { BaseObject } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
 import { Star } from './Star.ts';
@@ -63,9 +59,9 @@ export class Player extends BaseObject {
             this.image = new Image();
             this.imageJumped = new Image();
             this.imageFall = new Image();
-            this.image.src = playerImage;
-            this.imageJumped.src = playerImageJumped;
-            this.imageFall.src = playerImageFall;
+            this.image.src = `${ImagePreloadService.normalizePath('/images/player_jump2.png')}`;
+            this.imageJumped.src = `${ImagePreloadService.normalizePath('/images/player_jumped.png')}`;
+            this.imageFall.src = `${ImagePreloadService.normalizePath('/images/player_jump.png')}`;
         }
 
         this.gravity = this.BASE_GRAVITY;

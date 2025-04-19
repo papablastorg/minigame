@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import pointImage from '/images/PAPApoint.png';
 
 import { GameEngine } from '../../engine';
 import { useGameActions } from './useGameActions.ts';
@@ -20,6 +19,9 @@ const noSelectStyles: React.CSSProperties = {
   WebkitTouchCallout: 'none',
   touchAction: 'manipulation',
 };
+
+// Вместо прямого импорта, используем константу с путем к изображению
+const POINT_IMAGE_PATH = '/images/PAPApoint.png';
 
 export const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -280,7 +282,7 @@ export const Game = () => {
         {gameState === 'gameover' && 
         <p className={styles.gameOverScore}>
           <span className={styles.starStats}>
-            $PAPApoint: <span>{stars} </span> <ImagePreloader src={pointImage} alt="point" />
+            $PAPApoint: <span>{stars} </span> <ImagePreloader src={POINT_IMAGE_PATH} alt="point" />
             </span>
           </p>
         }
@@ -326,7 +328,7 @@ export const Game = () => {
           <>
            <div className={styles.scoreBoard}>
               <span className={styles.starsCount}>
-                <ImagePreloader src={pointImage} alt="point" />
+                <ImagePreloader src={POINT_IMAGE_PATH} alt="point" />
                 {stars} 
                 </span>
             </div>

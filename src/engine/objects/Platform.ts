@@ -1,8 +1,3 @@
-import platformImage1 from '/images/static_platform.png';
-import platformImage2 from '/images/move_platform.png';
-import platformImage3 from '/images/broken_platform.png';
-import platformImage4 from '/images/flash_platform.png';
-
 import StoreInstance, { Store } from '../store/index.ts';
 import { BaseObject, ObjectSpacing, PlatformObjectSpacingConfig } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
@@ -79,11 +74,8 @@ export class Platform {
             // Если изображение в кэше, используем его
             this.image = cachedImage;
         } else {
-            // Если нет в кэше, загружаем обычным способом
-            if (this.type === 1) this.image.src = platformImage1;
-            else if (this.type === 2) this.image.src = platformImage2;
-            else if (this.type === 3) this.image.src = platformImage3;
-            else if (this.type === 4) this.image.src = platformImage4;
+            // Если нет в кэше, загружаем с нормализованным путем
+            this.image.src = ImagePreloadService.normalizePath(imagePath);
         }
         
         this.moved = 0;
