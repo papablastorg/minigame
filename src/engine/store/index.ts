@@ -6,7 +6,7 @@ import { PlatformBroken } from '../objects/PlatformBroken';
 
 export class Store {
   public platforms: Platform[] = [];
-  public player!: Player;
+  public player!: Player;  // Теперь это просто ссылка на экземпляр игрока
   public base!: Base;
   public platformBroken!: PlatformBroken;
   public spring!: Spring;

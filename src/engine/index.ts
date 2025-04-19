@@ -62,7 +62,12 @@ export class GameEngine extends Engine {
   }
 
   public restart() {
+    if (this.store.player) {
+      this.store.player.start();
+    }
+    this.store.starsCollected = 0;
     this.clear();
+    console.log('Restarting game...');
     this.start();
   }
 
