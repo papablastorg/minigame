@@ -268,7 +268,7 @@ export const Game = () => {
     }
     
     return undefined;
-  }, [gameState, profile, startGame, t, isTestMode]);
+  }, [gameState, profile, startGame, t, isTestMode, restartGame]);
 
   const action = useMemo(() => {
     const info = getActionInfo();

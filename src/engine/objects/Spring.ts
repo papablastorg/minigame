@@ -12,6 +12,7 @@ export class Spring extends BaseObject {
     public store: Store = StoreInstance;
     public image: HTMLImageElement;
     private animationTimer: number | null = null;
+    private initialPositionSet = false; // флаг для отслеживания инициализации позиции
 
     constructor(name: string) {
         super(name);
@@ -33,6 +34,16 @@ export class Spring extends BaseObject {
 
     draw(ctx: CanvasRenderingContext2D | null) {
         if (!ctx) return;
+        
+        // Не рисовать пружину, если её позиция ещё не инициализирована правильно
+        if (!this.initialPositionSet && (this.x === 0 && this.y === 0)) {
+            return;
+        }
+        
+        // Если позиция не (0,0), считаем что пружина правильно размещена
+        if (this.x !== 0 || this.y !== 0) {
+            this.initialPositionSet = true;
+        }
 
         if (this.image.complete) {
             const cropY = 0;       
