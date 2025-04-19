@@ -22,6 +22,8 @@ export class Platform {
     public store: Store = StoreInstance;
     public attachedObjects: BaseObject[] = [];
     private objectSpacingConfig: PlatformObjectSpacingConfig = { default: { verticalSpacing: 0 } };
+    private isImageLoaded: boolean = false;
+    private lastPosition = { x: 0, y: 0 }; // Для отслеживания изменений позиции
 
     constructor(position: number, canvasWidth: number, score: number, level: number, objects?: BaseObject[]) {
         // Устанавливаем размеры платформы как процент от размеров канваса
@@ -30,8 +32,8 @@ export class Platform {
         
         this.x = Math.random() * (canvasWidth - this.width);
         this.y = position;
-        this.image = new Image();
-
+        this.lastPosition = { x: this.x, y: this.y };
+        
         if (objects) this.attachedObjects = objects;
         this.setObjectSpacing("spring", { verticalSpacing: -8 });
         this.setObjectSpacing("star", { verticalSpacing: 0 });
@@ -73,13 +75,23 @@ export class Platform {
         if (cachedImage) {
             // Если изображение в кэше, используем его
             this.image = cachedImage;
+            this.isImageLoaded = true;
         } else {
-            // Если нет в кэше, загружаем с нормализованным путем
+            // Если нет в кэше, создаем новый экземпляр и загружаем
+            this.image = new Image();
+            this.image.onload = () => {
+                this.isImageLoaded = true;
+            };
             this.image.src = ImagePreloadService.normalizePath(imagePath);
         }
         
         this.moved = 0;
         this.vx = this.BASE_MOVE_SPEED;
+        
+        // Оптимизация для мобильных устройств: предварительное обновление позиций объектов
+        setTimeout(() => {
+            this.updateAttachedObjectsPosition();
+        }, 0);
     }
 
     public attachObject(object: BaseObject) {
@@ -102,29 +114,33 @@ export class Platform {
         if (!ctx) return;
         if ((this.type === 3 && this.flag === 1) || (this.type === 4 && this.state === 1)) return;
 
-        if (this.image.complete) {
+        // Улучшенная отрисовка платформ для мобильных устройств
+        if (this.isImageLoaded) {
             const cropY = 8;
             const cropHeight = 110;
             const cropX = 3;
             const cropWidth = 295;
             
-            
-            ctx.drawImage(
-                this.image,
-                cropX, cropY,
-                cropWidth, cropHeight,
-                this.x, this.y,
-                this.width, this.height
-            );
+            try {
+                ctx.drawImage(
+                    this.image,
+                    cropX, cropY,
+                    cropWidth, cropHeight,
+                    this.x, this.y,
+                    this.width, this.height
+                );
+            } catch (e) {
+                // Фоллбэк для ситуаций, когда изображение не может быть отрисовано
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(this.x, this.y, this.width, this.height);
+            }
         } else {
+            // Фоллбэк, пока изображение загружается
             ctx.fillStyle = '#8B4513';
             ctx.fillRect(this.x, this.y, this.width, this.height);
         }
         
-        // Очищаем список объектов от тех, что должны быть скрыты
-        this.cleanupAttachedObjects();
-        
-        // Теперь рисуем только видимые объекты
+        // Оптимизированная отрисовка прикрепленных объектов
         this.attachedObjects.forEach(object => {
             if (object.name === 'star' || (object.name === 'spring' && (this.type === 1 || this.type === 2))) {
                 object.draw(ctx);
@@ -145,11 +161,17 @@ export class Platform {
     }
 
     private cleanupAttachedObjects() {
-        // Находим звезды с состоянием state=1 и низкой прозрачностью
+        // Оптимизация для убирания звезд с низкой прозрачностью
         for (let i = this.attachedObjects.length - 1; i >= 0; i--) {
             const obj = this.attachedObjects[i];
             // Если это звезда, которая была собрана и уже почти прозрачная - удаляем её
             if (obj instanceof Star && obj.state === 1 && obj.getOpacity() < 0.05) {
+                this.attachedObjects.splice(i, 1);
+            }
+            
+            // Удаляем объекты, если платформа вышла за границы экрана
+            if (this.y > window.innerHeight) {
+                if (obj instanceof Spring) obj.cleanup();
                 this.attachedObjects.splice(i, 1);
             }
         }
@@ -174,23 +196,31 @@ export class Platform {
     }
 
     update(deltaTime: number = 1) {
+        // Ограничиваем deltaTime для предотвращения больших скачков
+        const limitedDeltaTime = Math.min(deltaTime, 1.5);
+        
         if (this.type === 2) {
             if (this.x < 0 || this.x + this.width > window.innerWidth) this.vx *= -1;
-            this.x += this.vx * deltaTime;
+            this.x += this.vx * limitedDeltaTime;
         }
 
-        // Обновляем все прикрепленные объекты
-        this.attachedObjects.forEach((obj, index) => {
-            // Обновляем каждый объект с учетом deltaTime
-            obj.update(deltaTime);
-            
-            // Удаляем объекты, если платформа вышла за границы экрана
-            if (this.y > window.innerHeight) {
-                if (obj instanceof Spring) obj.cleanup();
-                this.attachedObjects.splice(index, 1);
-            }
-        });
+        // Обновляем все прикрепленные объекты только если платформа изменила позицию
+        const positionChanged = 
+            Math.abs(this.x - this.lastPosition.x) > 0.1 || 
+            Math.abs(this.y - this.lastPosition.y) > 0.1;
 
-        this.updateAttachedObjectsPosition();
+        if (positionChanged) {
+            this.updateAttachedObjectsPosition();
+            this.lastPosition = { x: this.x, y: this.y };
+        }
+
+        // Очищаем список от ненужных объектов для экономии памяти
+        this.cleanupAttachedObjects();
+
+        // Обновляем все прикрепленные объекты
+        this.attachedObjects.forEach((obj) => {
+            // Обновляем каждый объект с учетом limitedDeltaTime
+            obj.update(limitedDeltaTime);
+        });
     }
 }
