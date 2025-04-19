@@ -89,29 +89,48 @@ export class PlatformManager extends Manager {
   }
 
   private generatePlatforms(deltaTime: number) {
+    // Ограничиваем deltaTime для предотвращения больших скачков на мобильных устройствах
+    const limitedDeltaTime = Math.min(deltaTime, 1.5);
+    
     if (this.store.player.y <= (this.height / 2) - (this.store.player.height / 2)) {
       if (this.store.player.vy < 0) {
-        this.store.platforms.forEach( (p, i) => {
-          p.y -= this.store.player.vy * deltaTime;
+        // Более стабильное перемещение платформ с ограниченной дельтой
+        const platformMovement = this.store.player.vy * limitedDeltaTime;
+        
+        this.store.platforms.forEach((p, i) => {
+          p.y -= platformMovement;
           
+          // Синхронизируем перемещение прикрепленных объектов
           p.attachedObjects.forEach(obj => {
             if ('y' in obj && typeof obj.y === 'number') {
-              obj.y -= this.store.player.vy * deltaTime;
+              obj.y -= platformMovement;
             }
           });
           
+          // Перепроверяем, что платформа действительно вышла за границы
+          // и создаем новую с задержкой, чтобы избежать проблем при рестарте
           if (p.y > this.height) {
             const currentLevel = this.store.player.getCurrentLevel();
-            this.store.platforms[i] = new Platform(
-              p.y - this.height - (this.height / this.platformCount),
-              this.width,
-              this.store.player.score,
-              currentLevel,
-              this.getObjectsForPlatform()
-            );
+            
+            // Используем requestAnimationFrame для создания новых платформ с небольшой задержкой
+            // Это помогает со стабильностью на мобильных устройствах
+            setTimeout(() => {
+              if (this.store.platforms[i]) {
+                this.store.platforms[i] = new Platform(
+                  p.y - this.height - (this.height / this.platformCount),
+                  this.width,
+                  this.store.player.score,
+                  currentLevel,
+                  this.getObjectsForPlatform()
+                );
+                // Настраиваем вертикальное расположение объектов
+                this.store.platforms[i].setObjectSpacing("spring", { verticalSpacing: -8 });
+                this.store.platforms[i].setObjectSpacing("star", { verticalSpacing: 0 });
+              }
+            }, 0);
           }
-        } );
-        this.store.base.y -= this.store.player.vy * deltaTime;
+        });
+        this.store.base.y -= platformMovement;
       }
     }
   }
