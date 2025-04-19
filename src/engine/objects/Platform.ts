@@ -1,8 +1,3 @@
-import platformImage1 from '/images/static_platform.png';
-import platformImage2 from '/images/move_platform.png';
-import platformImage3 from '/images/broken_platform.png';
-import platformImage4 from '/images/flash_platform.png';
-
 import StoreInstance, { Store } from '../store/index.ts';
 import { BaseObject, ObjectSpacing, PlatformObjectSpacingConfig } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
@@ -41,25 +36,29 @@ export class Platform {
         this.setObjectSpacing("spring", { verticalSpacing: -8 });
         this.setObjectSpacing("star", { verticalSpacing: 0 });
         
-        // Определяем какое изображение нужно использовать для этого уровня
         let imagePath = '';
         if (level === 1) imagePath = '/images/static_platform.png';
         else if (level === 2) imagePath = '/images/move_platform.png';
         else imagePath = '/images/broken_platform.png';
 
-        if (score >= 5000) this.types = [2, 3, 3, 3, 4, 4, 4, 4];
-        else if (score >= 2000 && score < 5000) this.types = [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
-        else if (score >= 1000 && score < 2000) this.types = [2, 2, 2, 3, 3, 3, 3, 3];
-        else if (score >= 500 && score < 1000) this.types = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
-        else if (score >= 100 && score < 500) this.types = [1, 1, 1, 1, 2, 2];
+        const safeScore = score || 0;
+
+        if (safeScore >= 5000) this.types = [2, 3, 3, 3, 4, 4, 4, 4];
+        else if (safeScore >= 2000 && safeScore < 5000) this.types = [2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4];
+        else if (safeScore >= 1000 && safeScore < 2000) this.types = [2, 2, 2, 3, 3, 3, 3, 3];
+        else if (safeScore >= 500 && safeScore < 1000) this.types = [1, 1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3];
+        else if (safeScore >= 100 && safeScore < 500) this.types = [1, 1, 1, 1, 2, 2];
         else this.types = [1];
 
         this.type = this.types[Math.floor(Math.random() * this.types.length)];
 
-        if (this.type === 3 && this.store.player.broken < 1) this.store.player.broken++;
-        else if (this.type === 3 && this.store.player.broken >= 1) {
-            this.type = 1;
-            this.store.player.broken = 0;
+        // Безопасное обращение к свойствам player, чтобы избежать ошибок при рестарте
+        if (this.store.player && typeof this.store.player.broken === 'number') {
+            if (this.type === 3 && this.store.player.broken < 1) this.store.player.broken++;
+            else if (this.type === 3 && this.store.player.broken >= 1) {
+                this.type = 1;
+                this.store.player.broken = 0;
+            }
         }
 
         // Определение пути к изображению на основе типа платформы
@@ -75,11 +74,8 @@ export class Platform {
             // Если изображение в кэше, используем его
             this.image = cachedImage;
         } else {
-            // Если нет в кэше, загружаем обычным способом
-            if (this.type === 1) this.image.src = platformImage1;
-            else if (this.type === 2) this.image.src = platformImage2;
-            else if (this.type === 3) this.image.src = platformImage3;
-            else if (this.type === 4) this.image.src = platformImage4;
+            // Если нет в кэше, загружаем с нормализованным путем
+            this.image.src = ImagePreloadService.normalizePath(imagePath);
         }
         
         this.moved = 0;

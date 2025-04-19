@@ -2,6 +2,11 @@
  * Сервис для предзагрузки и кэширования изображений
  */
 
+import { CONFIG } from '../config';
+
+// Получаем базовый URL из конфигурации
+const baseUrl = CONFIG.BASE_URL;
+
 // Список всех изображений, которые нужно предзагрузить
 const gameImages = [
   '/images/player_start_img.png',
@@ -35,13 +40,24 @@ let totalLoaded = 0;
 let totalFailed = 0;
 
 /**
+ * Нормализует путь к изображению с учетом базового URL
+ */
+export const normalizePath = (src: string): string => {
+  // Удаляем начальный слеш, если он есть
+  const cleanPath = src.startsWith('/') ? src.substring(1) : src;
+  
+  // Формируем полный путь с учетом baseUrl
+  return `${baseUrl}${cleanPath}`;
+};
+
+/**
  * Загружает одно изображение и возвращает Promise
  */
 const loadImage = (src: string): Promise<HTMLImageElement> => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      // Сохраняем в кэше с прямым путем
+      // Сохраняем в кэше с оригинальным путем
       imageCache[src] = img;
       
       // Также сохраняем с альтернативным путем (с/без начального слэша)
@@ -63,7 +79,9 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
       console.error(`❌ Ошибка загрузки изображения ${src}:`, err);
       reject(new Error(`Не удалось загрузить изображение: ${src}`));
     };
-    img.src = src;
+    
+    // Используем нормализованный путь для src
+    img.src = normalizePath(src);
   });
 };
 
@@ -72,6 +90,7 @@ const loadImage = (src: string): Promise<HTMLImageElement> => {
  */
 export const preloadAllImages = async (): Promise<void> => {
   console.log(`🖼️ Начинаем предзагрузку ${gameImages.length} изображений...`);
+  console.log(`🌐 Базовый URL: ${baseUrl}`);
   totalLoaded = 0;
   totalFailed = 0;
   
@@ -118,7 +137,7 @@ export const getImageFromCache = (src: string): HTMLImageElement | null => {
     return imageCache[altSrc];
   }
 
-  // Проверяем полный URL
+  // Проверяем различные варианты путей
   const possiblePaths = [
     src,
     altSrc,
@@ -132,8 +151,12 @@ export const getImageFromCache = (src: string): HTMLImageElement | null => {
     }
   }
 
-  console.warn(`⚠️ Изображение не найдено в кэше: ${src}`);
-  return null;
+  // Если изображение не найдено в кэше, пробуем загрузить его с нормализованным путем
+  console.warn(`⚠️ Изображение не найдено в кэше: ${src}, пробуем загрузить на лету`);
+  const img = new Image();
+  img.src = normalizePath(src);
+  imageCache[src] = img; // Сохраняем в кэш для будущих запросов
+  return img;
 };
 
 /**
@@ -142,7 +165,8 @@ export const getImageFromCache = (src: string): HTMLImageElement | null => {
 export const ImagePreloadService = {
   preloadAllImages,
   getImageFromCache,
-  areAllImagesLoaded
+  areAllImagesLoaded,
+  normalizePath
 };
 
 export default ImagePreloadService;

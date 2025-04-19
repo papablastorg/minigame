@@ -1,7 +1,3 @@
-import playerImage from '/images/player_jump2.png';
-import playerImageJumped from '/images/player_jumped.png';
-import playerImageFall from '/images/player_jump.png';
-
 import { BaseObject } from '../interfaces.ts';
 import { Spring } from './Spring.ts';
 import { Star } from './Star.ts';
@@ -63,9 +59,9 @@ export class Player extends BaseObject {
             this.image = new Image();
             this.imageJumped = new Image();
             this.imageFall = new Image();
-            this.image.src = playerImage;
-            this.imageJumped.src = playerImageJumped;
-            this.imageFall.src = playerImageFall;
+            this.image.src = `${ImagePreloadService.normalizePath('/images/player_jump2.png')}`;
+            this.imageJumped.src = `${ImagePreloadService.normalizePath('/images/player_jumped.png')}`;
+            this.imageFall.src = `${ImagePreloadService.normalizePath('/images/player_jump.png')}`;
         }
 
         this.gravity = this.BASE_GRAVITY;
@@ -75,6 +71,16 @@ export class Player extends BaseObject {
     start() {
         this.flag = 0;
         this.dir = 'left';
+        this.vy = 6;
+        this.vx = 0;
+        this.x = this.canvasWidth / 2 - this.width / 2;
+        this.y = this.canvasHeight - this.height;
+        this.isMovingLeft = false;
+        this.isMovingRight = false;
+        this.gravity = this.BASE_GRAVITY;
+        this.isDead = false;
+        this.score = 0;
+        this.broken = 0;
     }
 
     draw(ctx: CanvasRenderingContext2D | null) {
@@ -132,10 +138,10 @@ export class Player extends BaseObject {
 
     public update(deltaTime: number) {
         // Update direction based on movement
-        if (this.store.player.isMovingLeft) {
-            this.store.player.dir = "left";
-        } else if (this.store.player.isMovingRight) {
-            this.store.player.dir = "right";
+        if (this.isMovingLeft) {
+            this.dir = "left";
+        } else if (this.isMovingRight) {
+            this.dir = "right";
         }
 
         const horizontalAccel = this.BASE_HORIZONTAL_ACCEL * deltaTime;
@@ -143,53 +149,56 @@ export class Player extends BaseObject {
         const maxHorizontalSpeed = this.BASE_MAX_HORIZONTAL_SPEED;
         
         // Movement с учетом deltaTime
-        if (this.store.player.isMovingLeft) {
-            this.store.player.x += this.store.player.vx * deltaTime;
-            this.store.player.vx -= horizontalAccel;
+        if (this.isMovingLeft) {
+            this.x += this.vx * deltaTime;
+            this.vx -= horizontalAccel;
         } else {
-            this.store.player.x += this.store.player.vx * deltaTime;
-            if (this.store.player.vx < 0) this.store.player.vx += horizontalDecel;
+            this.x += this.vx * deltaTime;
+            if (this.vx < 0) this.vx += horizontalDecel;
         }
 
-        if (this.store.player.isMovingRight) {
-            this.store.player.x += this.store.player.vx * deltaTime;
-            this.store.player.vx += horizontalAccel;
+        if (this.isMovingRight) {
+            this.x += this.vx * deltaTime;
+            this.vx += horizontalAccel;
         } else {
-            this.store.player.x += this.store.player.vx * deltaTime;
-            if (this.store.player.vx > 0) this.store.player.vx -= horizontalDecel;
+            this.x += this.vx * deltaTime;
+            if (this.vx > 0) this.vx -= horizontalDecel;
         }
 
         // Speed limits
-        if (this.store.player.vx > maxHorizontalSpeed) this.store.player.vx = maxHorizontalSpeed;
-        else if (this.store.player.vx < -maxHorizontalSpeed) this.store.player.vx = -maxHorizontalSpeed;
+        if (this.vx > maxHorizontalSpeed) {
+            this.vx = maxHorizontalSpeed;
+        } else if (this.vx < -maxHorizontalSpeed){
+            this.vx = -maxHorizontalSpeed;
+        }
 
         // Jump on base
-        if ((this.store.player.y + this.store.player.height) > this.store.base.y && this.store.base.y < this.canvasHeight) {
-            this.store.player.jump();
+        if ((this.y + this.height) > this.store.base.y && this.store.base.y < this.canvasHeight) {
+            this.jump();
         }
 
         // Game over
-        if (this.store.base.y > this.canvasHeight && (this.store.player.y + this.store.player.height) > this.canvasHeight && this.store.player.isDead !== "lol") {
-            this.store.player.isDead = true;
+        if (this.store.base.y > this.canvasHeight && (this.y + this.height) > this.canvasHeight && this.isDead !== "lol") {
+            this.isDead = true;
         }
 
         // Wrap around
-        if (this.store.player.x > this.canvasWidth) this.store.player.x = 0 - this.store.player.width;
-        else if (this.store.player.x < 0 - this.store.player.width) this.store.player.x = this.canvasWidth;
+        if (this.x > this.canvasWidth) this.x = 0 - this.width;
+        else if (this.x < 0 - this.width) this.x = this.canvasWidth;
 
         // Гравитация с учетом deltaTime
         const gravity = this.BASE_GRAVITY * deltaTime;
         const maxFallSpeed = this.BASE_MAX_FALL_SPEED;
 
         // Gravity and platform movement
-        if (this.store.player.y >= (this.canvasHeight / 2) - (this.store.player.height / 2)) {
-            this.store.player.y += this.store.player.vy * deltaTime;
-            this.store.player.vy = Math.min(this.store.player.vy + gravity, maxFallSpeed);
+        if (this.y >= (this.canvasHeight / 2) - (this.height / 2)) {
+            this.y += this.vy * deltaTime;
+            this.vy = Math.min(this.vy + gravity, maxFallSpeed);
         } else {
-            this.store.player.vy = Math.min(this.store.player.vy + gravity, maxFallSpeed);
-            if (this.store.player.vy >= 0) {
-                this.store.player.y += this.store.player.vy * deltaTime;
-                this.store.player.vy = Math.min(this.store.player.vy + gravity, maxFallSpeed);
+            this.vy = Math.min(this.vy + gravity, maxFallSpeed);
+            if (this.vy >= 0) {
+                this.y += this.vy * deltaTime;
+                this.vy = Math.min(this.vy + gravity, maxFallSpeed);
             }
 
             // Увеличение счета в зависимости от скорости обновления кадров
@@ -199,9 +208,9 @@ export class Player extends BaseObject {
 
         // Platform collisions
         this.store.platforms.forEach(p => {
-            const playerBottom = this.store.player.y + this.store.player.height;
-            const playerLeft = this.store.player.x;
-            const playerRight = this.store.player.x + this.store.player.width;
+            const playerBottom = this.y + this.height;
+            const playerLeft = this.x;
+            const playerRight = this.x + this.width;
             const platformTop = p.y;
             const platformBottom = p.y + p.height;
             const platformLeft = p.x;
@@ -214,7 +223,7 @@ export class Player extends BaseObject {
                 playerLeft < star.x + star.width &&
                 playerRight > star.x &&
                 playerBottom > star.y &&
-                this.store.player.y < star.y + star.height) {
+                this.y < star.y + star.height) {
                 star.state = 1;
                 this.store.starsCollected++;
                 this.store.onStarsUpdate(this.store.starsCollected);
@@ -223,19 +232,19 @@ export class Player extends BaseObject {
             // Check for spring collisions
             const spring = p.attachedObjects.find(obj => obj instanceof Spring) as Spring | undefined;
             if (spring &&
-                this.store.player.vy > 0 &&
+                this.vy > 0 &&
                 spring.state === 0 &&
                 (playerLeft + 15 < spring.x + spring.width) &&
                 (playerRight - 15 > spring.x) &&
                 (playerBottom > spring.y) &&
                 (playerBottom < spring.y + spring.height)) {
                 spring.state = 1;
-                this.store.player.jumpHigh();
+                this.jumpHigh();
                 return;
             }
 
             // Platform collision check
-            if (this.store.player.vy > 0 && p.state === 0 &&
+            if (this.vy > 0 && p.state === 0 &&
                 playerBottom > platformTop &&
                 playerBottom < platformBottom &&
                 playerRight > platformLeft + 5 &&
@@ -249,21 +258,21 @@ export class Player extends BaseObject {
                     }
                     return;
                 } else if (p.type === 4 && p.state === 0) {
-                    this.store.player.jump();
+                    this.jump();
                     p.state = 1;
                 } else if (p.flag === 1) return;
                 else {
-                    this.store.player.land();
-                    this.store.player.jump();
-                    this.store.player.dir = this.store.player.dir === "right" ? "right_land" : "left_land";
+                    this.land();
+                    this.jump();
+                    this.dir = this.dir === "right" ? "right_land" : "left_land";
                     setTimeout(() => {
-                        this.store.player.dir = this.store.player.dir === "right_land" ? "right" : "left";
+                        this.dir = this.dir === "right_land" ? "right" : "left";
                     }, 200);
                 }
             }
         });
 
-        if (this.store.player.isDead) {
+        if (this.isDead) {
             this.gameOver(deltaTime);
         }
     }
@@ -280,14 +289,14 @@ export class Player extends BaseObject {
             p.y -= moveSpeed;
         });
 
-        if (this.store.player.y > this.canvasHeight/2 && this.flag === 0) {
-            this.store.player.y -= this.BASE_PLAYER_MOVE_SPEED * deltaTime;
-            this.store.player.vy = 0;
-        } else if (this.store.player.y < this.canvasHeight / 2) {
+        if (this.y > this.canvasHeight/2 && this.flag === 0) {
+            this.y -= this.BASE_PLAYER_MOVE_SPEED * deltaTime;
+            this.vy = 0;
+        } else if (this.y < this.canvasHeight / 2) {
             this.flag = 1;
-        } else if (this.store.player.y + this.store.player.height > this.canvasHeight) {
+        } else if (this.y + this.height > this.canvasHeight) {
             this.store.onGameOver();
-            this.store.player.isDead = "lol";
+            this.isDead = "lol";
         }
     }
 }
