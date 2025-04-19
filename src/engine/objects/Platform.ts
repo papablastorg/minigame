@@ -24,6 +24,7 @@ export class Platform {
     private objectSpacingConfig: PlatformObjectSpacingConfig = { default: { verticalSpacing: 0 } };
     private isImageLoaded: boolean = false;
     private lastPosition = { x: 0, y: 0 }; // Для отслеживания изменений позиции
+    private checkedPlayerBroken: boolean = false; // Для безопасной проверки состояния игрока
 
     constructor(position: number, canvasWidth: number, score: number, level: number, objects?: BaseObject[]) {
         // Устанавливаем размеры платформы как процент от размеров канваса
@@ -52,17 +53,12 @@ export class Platform {
         else if (safeScore >= 100 && safeScore < 500) this.types = [1, 1, 1, 1, 2, 2];
         else this.types = [1];
 
+        // Безопасное определение случайного типа платформы
         this.type = this.types[Math.floor(Math.random() * this.types.length)];
-
-        // Безопасное обращение к свойствам player, чтобы избежать ошибок при рестарте
-        if (this.store.player && typeof this.store.player.broken === 'number') {
-            if (this.type === 3 && this.store.player.broken < 1) this.store.player.broken++;
-            else if (this.type === 3 && this.store.player.broken >= 1) {
-                this.type = 1;
-                this.store.player.broken = 0;
-            }
-        }
-
+        
+        // Мы откладываем проверку broken до первого обновления
+        // Это предотвратит ошибки при рестарте на iOS/MacOS
+        
         // Определение пути к изображению на основе типа платформы
         if (this.type === 1) imagePath = '/images/static_platform.png';
         else if (this.type === 2) imagePath = '/images/move_platform.png';
@@ -198,6 +194,29 @@ export class Platform {
     update(deltaTime: number = 1) {
         // Ограничиваем deltaTime для предотвращения больших скачков
         const limitedDeltaTime = Math.min(deltaTime, 1.5);
+        
+        // Проверяем состояние игрока для платформ типа 3 только при обновлении
+        // Этот код перемещен из конструктора для более безопасной работы при рестарте
+        if (this.type === 3 && !this.checkedPlayerBroken) {
+            this.checkedPlayerBroken = true;
+            
+            try {
+                if (this.store.player && typeof this.store.player.broken === 'number') {
+                    // Если у игрока уже достаточно сломанных платформ, меняем тип
+                    if (this.store.player.broken >= 1) {
+                        this.type = 1;
+                        this.store.player.broken = 0;
+                    } else {
+                        // Иначе увеличиваем счетчик сломанных платформ
+                        this.store.player.broken++;
+                    }
+                }
+            } catch (e) {
+                // Безопасно обработаем ошибки при проверке свойств игрока
+                console.warn('Error checking player broken state:', e);
+                this.type = 1; // Безопасно устанавливаем тип платформы
+            }
+        }
         
         if (this.type === 2) {
             if (this.x < 0 || this.x + this.width > window.innerWidth) this.vx *= -1;
