@@ -17,6 +17,61 @@ import styles from './App.module.css';
 function App() {
   const [queryClient] = useState(() => new QueryClient());
   const { t } = useTranslation();
+
+  useEffect(() => {
+    WebApp.ready();
+    console.log('Telegram WebApp version:', WebApp.version);
+    console.log('Telegram WebApp platform:', WebApp.platform);
+    
+    try {
+      WebApp.expand(); // Expand WebApp on any platform
+      
+      // Проверяем, что это мобильная платформа и поддерживается полноэкранный режим
+      if (WebApp.isVersionAtLeast('8.0') && 
+          (WebApp.platform === 'android' || WebApp.platform === 'ios')) {
+        console.log('Fullscreen mode is supported on mobile, enabling...');
+        WebApp.requestFullscreen();
+        
+        // Отключаем вертикальные свайпы для предотвращения выхода из полноэкранного режима
+        if (WebApp.isVersionAtLeast('7.7') && typeof WebApp.disableVerticalSwipes === 'function') {
+          console.log('Disabling vertical swipes to prevent exiting fullscreen');
+          WebApp.disableVerticalSwipes();
+        }
+        
+        // Отключаем стандартное поведение выхода из полноэкранного режима при нажатии "Назад"
+        WebApp.onEvent('backButtonClicked', () => {
+          // Вместо выхода из полноэкранного режима, можно добавить свою логику
+          // например, возврат к предыдущему экрану в приложении
+          console.log('Back button clicked, but staying in fullscreen mode');
+        });
+        
+        // Добавляем слушатель изменения полноэкранного режима
+        WebApp.onEvent('fullscreenChanged', () => {
+          console.log('Fullscreen changed, current state:', WebApp.isFullscreen);
+          // Если вышли из полноэкранного режима, запросим его снова
+          if (!WebApp.isFullscreen) {
+            setTimeout(() => WebApp.requestFullscreen(), 100);
+          }
+        });
+
+        // Проверяем состояние полноэкранного режима при получении фокуса приложением
+        WebApp.onEvent('activated', () => {
+          console.log('App activated, checking fullscreen state');
+          if (!WebApp.isFullscreen) {
+            console.log('Restoring fullscreen mode after app activation');
+            setTimeout(() => WebApp.requestFullscreen(), 100);
+          }
+        });
+      } else {
+        console.log('Fullscreen mode is not supported or not mobile platform');
+      }
+    } catch (error) {
+      console.warn('Error while interacting with Telegram WebApp API:', error);
+    }
+    
+    console.log('WebApp.initData', WebApp.initData);
+    console.log('WebApp.initDataUnsafe', WebApp.initDataUnsafe);
+  }, []);
   
 
   // Check if the app is running within Telegram
@@ -34,30 +89,6 @@ function App() {
       </div>
     );
   }
-
-  useEffect(() => {
-    WebApp.ready();
-    console.log('Telegram WebApp version:', WebApp.version);
-    try {
-      WebApp.expand();
-      // Проверяем поддержку полноэкранного режима (Bot API 8.0+)
-      if (WebApp.isVersionAtLeast('8.0')) {
-        console.log('Fullscreen mode is supported, enabling...');
-        WebApp.requestFullscreen();
-        // Добавляем слушатель событий для кнопки "Назад"
-        WebApp.onEvent('backButtonClicked', () => {
-          WebApp.exitFullscreen();
-        });
-      } else {
-        console.log('Fullscreen mode is not supported in this Telegram client version');
-      }
-    } catch (error) {
-      console.warn('Error while interacting with Telegram WebApp API:', error);
-    }
-    
-    console.log('WebApp.initData', WebApp.initData);
-    console.log('WebApp.initDataUnsafe', WebApp.initDataUnsafe);
-  }, []);
 
   const baseUrl = CONFIG.BASE_URL;
 
