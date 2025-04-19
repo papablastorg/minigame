@@ -21,6 +21,7 @@ export class Star extends BaseObject {
     private floatAmplitude: number;
     private timeOffset: number = Math.random() * Math.PI * 2; // Случайная начальная фаза
     private animationTime: number = 0;
+    private initialPositionSet = false; // флаг для отслеживания инициализации позиции
 
     constructor(name: string) {
         super(name);
@@ -63,6 +64,16 @@ export class Star extends BaseObject {
 
         // Если звезда полностью прозрачна, не рисуем её
         if (this.opacity === 0 || this.state === 1 && this.opacity < 0.05) return;
+
+        // Не рисовать звезду, если её позиция ещё не инициализирована правильно
+        if (!this.initialPositionSet && (this.x === 0 && this.y === 0)) {
+            return;
+        }
+        
+        // Если позиция не (0,0), считаем что звезда правильно размещена
+        if (this.x !== 0 || this.y !== 0) {
+            this.initialPositionSet = true;
+        }
 
         ctx.save();
         ctx.globalAlpha = this.opacity;
