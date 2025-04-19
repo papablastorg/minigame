@@ -62,13 +62,19 @@ export class GameEngine extends Engine {
   }
 
   public restart() {
-    if (this.store.player) {
-      this.store.player.start();
-    }
-    this.store.starsCollected = 0;
-    this.clear();
     console.log('Restarting game...');
-    this.start();
+    
+    // Сбрасываем состояние магазина перед очисткой движка
+    this.store.starsCollected = 0;
+    
+    // Полностью очищаем все объекты и менеджеры
+    this.clear();
+    
+    // Ждем один микротик чтобы система iOS успела обработать изменения
+    setTimeout(() => {
+      // Запускаем движок с чистого состояния
+      this.start();
+    }, 0);
   }
 
   public updateGame(deltaTime: number) {
