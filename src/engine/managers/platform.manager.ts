@@ -33,13 +33,15 @@ export class PlatformManager extends Manager {
 
   start() {
     this.jumpCount = 0;
+    this.position = 0;
+    this.platforms = [];
     this.initialGeneratePlatform();
   }
 
   public getObjectsForPlatform(): BaseObject[] {
     const objects: BaseObject[] = [];
     const random = Math.random();
-    const currentLevel = this.store.player.getCurrentLevel();
+    const currentLevel = this.store.player?.getCurrentLevel?.() || 1;
 
     let starChance = 0.3;
     let springChance = 0.05;
@@ -65,13 +67,14 @@ export class PlatformManager extends Manager {
 
   private initialGeneratePlatform() {
     this.platforms = [];
-    const currentLevel = this.store.player.getCurrentLevel();
+    const currentLevel = this.store.player?.getCurrentLevel?.() || 1;
+    const playerScore = this.store.player?.score || 0;
 
     for (let i = 0; i < this.platformCount; i++) {
       const platform = new Platform(
         this.position,
         this.width,
-        this.store.player.score,
+        playerScore,
         currentLevel,
         this.getObjectsForPlatform()
       );

@@ -1,6 +1,5 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
-import pointImage from '/images/PAPApoint.png';
 
 import { GameEngine } from '../../engine';
 import { useGameActions } from './useGameActions.ts';
@@ -12,6 +11,17 @@ import { ImagePreloader } from '../../common/ImagePreloader';
 import { Loader } from '../../common/Loader';
 import { Arrow } from '../icons/Arrow.tsx';
 import { ImagePreloadService } from '../../services';
+
+// Add inline styles to prevent text selection and other touch behaviors
+const noSelectStyles: React.CSSProperties = {
+  WebkitUserSelect: 'none',
+  userSelect: 'none',
+  WebkitTouchCallout: 'none',
+  touchAction: 'manipulation',
+};
+
+// Вместо прямого импорта, используем константу с путем к изображению
+const POINT_IMAGE_PATH = '/images/PAPApoint.png';
 
 export const Game = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -151,13 +161,59 @@ export const Game = () => {
     }
   },[start, isTestMode]);
 
-  const restartGame = () => {
+  const restartGame = useCallback(() => {
+    // Подготавливаем UI состояния
     setGameState('playing');
     setScore(0);
     setStars(0);
     setBackgroundLevel(1);
-    gameEngineRef.current?.restart();
-  };
+    
+    // Для полного и корректного рестарта необходимо полностью пересоздать игровой движок
+    // и дать ему полностью свежее состояние
+    
+    if (canvasRef.current) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      
+      if (ctx) {
+        // Сначала полностью очищаем Store от старых ссылок на объекты
+        if (gameEngineRef.current) {
+          // Очистка и освобождение ресурсов
+          try {
+            gameEngineRef.current.store.player = null as any;
+            gameEngineRef.current.store.platforms = [];
+            gameEngineRef.current.store.starsCollected = 0;
+          } catch (e) {
+            console.warn("Error during store cleanup:", e);
+          }
+          
+          // Важно - освобождаем ссылку на старый движок для GC
+          gameEngineRef.current = null;
+        }
+        
+        console.log("Creating a fresh game engine instance");
+        
+        // Создаем новый экземпляр игрового движка
+        const newGameEngine = new GameEngine(
+          canvas, 
+          ctx, 
+          handleScoreUpdate, 
+          handleStarsUpdate, 
+          handleGameOver
+        );
+        
+        // Сохраняем ссылку
+        gameEngineRef.current = newGameEngine;
+        
+        // Запускаем новый движок с чистого листа
+        setTimeout(() => {
+          // Запускаем в следующем тике, чтобы дать время на инициализацию
+          newGameEngine.start();
+          console.log("Fresh game engine started");
+        }, 0);
+      }
+    }
+  }, [handleGameOver, handleScoreUpdate, handleStarsUpdate]);
 
   const handleLeftButtonDown = () => {
     if (gameEngineRef.current) {
@@ -226,7 +282,7 @@ export const Game = () => {
         {gameState === 'gameover' && 
         <p className={styles.gameOverScore}>
           <span className={styles.starStats}>
-            $PAPApoint: <span>{stars} </span> <ImagePreloader src={pointImage} alt="point" />
+            $PAPApoint: <span>{stars} </span> <ImagePreloader src={POINT_IMAGE_PATH} alt="point" />
             </span>
           </p>
         }
@@ -249,7 +305,7 @@ export const Game = () => {
         [styles.levelOne]: gameState === 'playing' && backgroundLevel === 1,
         [styles.levelTwo]: gameState === 'playing' && backgroundLevel === 2,
         [styles.levelThree]: gameState === 'playing' && backgroundLevel === 3,
-      })}>
+      })} style={noSelectStyles}>
         {/* Добавляем переключатель тестового режима */}
         <div className={styles.testModeSwitch}>
           <input 
@@ -272,7 +328,7 @@ export const Game = () => {
           <>
            <div className={styles.scoreBoard}>
               <span className={styles.starsCount}>
-                <ImagePreloader src={pointImage} alt="point" />
+                <ImagePreloader src={POINT_IMAGE_PATH} alt="point" />
                 {stars} 
                 </span>
             </div>
